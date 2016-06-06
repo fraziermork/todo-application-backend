@@ -8,6 +8,7 @@ module.exports = AppError;
 const publicErrorMessageKeyByCode = {
   400: 'Bad Request',
   401: 'Not Authorized',
+  403: 'Forbidden',
   404: 'Not Found',
   409: 'Conflict',
   500: 'Internal Server Error'
@@ -65,3 +66,8 @@ function isAppError(err) {
   debug('isAppError ', err instanceof AppError);
   return err instanceof AppError;
 }
+
+
+// TODO: refactor to eliminate newAppError method, just use new, that way line number and file name of origin are preserved
+// TODO: figure out how to handle 401 responses, they require https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_Client_Error
+// need to figure out what 'realm' to use http://stackoverflow.com/questions/12701085/what-is-the-realm-in-basic-authentication

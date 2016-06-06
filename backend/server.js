@@ -14,18 +14,18 @@ const debug             = require('debug')('SERVER');
 
 // LOAD CUSTOM MIDDLEWARES
 const errMidware        = require(`${__dirname}/lib/error-response-middleware`);
-// const basicAuthMidware  = require(`${__dirname}/lib/basic-authentication-middleware`);
+const basicAuthMidware  = require(`${__dirname}/lib/basic-authentication-middleware`);
 // const tokenAuthMidware  = require(`${__dirname}/lib/token-authentication-middleware`);
 
 // LOAD ROUTERS
 const newAccountRouter  = require(`${__dirname}/routes/new-account`);
-// const loginRouter       = require(`${__dirname}/routes/login`);
+const loginRouter       = require(`${__dirname}/routes/login`);
 // const listsRouter       = require(`${__dirname}/routes/new-account`);
 // const itemsRouter       = require(`${__dirname}/routes/new-account`);
 
 // HANDLE SETUP 
 const app               = express();
-// Promise.promisifyAll(mongoose);
+Promise.promisifyAll(mongoose);
 
 // HANDLE DATABASE SETUP 
 mongoose.connect(DB_PORT);
@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 
 // UNAUTHENTICATED ROUTES
 app.use('/new-account', newAccountRouter);
-// app.use('/login', basicAuthMidware, loginRouter);
+app.use('/login', basicAuthMidware, loginRouter);
 
 // AUTHENTICATED ROUTES 
 // app.use(tokenAuthMidware);
