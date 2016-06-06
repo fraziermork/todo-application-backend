@@ -11,7 +11,7 @@ module.exports = returnManageServer;
  * @param  {type} port   the port that the server should be listening on 
  * @return {object}      the module object that contains the before and after methods
  */ 
-function returnManageServer(server, port) {
+function returnManageServer(mongoose, server, port) {
   return {
     checkIfServerRunningBeforeTests(done) {
       debug('checkIfServerRunningBeforeTests');
@@ -26,16 +26,22 @@ function returnManageServer(server, port) {
       debug('server was running, calling done');
       return done();
     },
-    closeServerAfterTests(done) {
+    closeServerAndDbAfterTests(done) {
       debug('closeServerAfterTests');
       if (server.isRunning) {
         return server.close(() => {
           debug('Server closed');
           server.isRunning = false;
-          return done();
+          mongoose.connection.db.dropDatabase(() => {
+            debug('dropped test db');
+            return done();
+          });
         });
       }
-      return done();
+      mongoose.connection.db.dropDatabase(() => {
+        debug('dropped test db');
+        return done();
+      });
     }
   };
 }

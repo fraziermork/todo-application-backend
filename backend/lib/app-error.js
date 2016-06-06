@@ -62,6 +62,6 @@ function newAppError(code, message) {
 * @return {boolean}       flag for whether it is an instance of the constructor above (true) or not (false)
 */
 function isAppError(err) {
-  debug('isAppError', err instanceof AppError);
+  debug('isAppError ', err instanceof AppError);
   return err instanceof AppError;
 }
