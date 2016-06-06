@@ -1,6 +1,6 @@
 'use strict';
 
-const debug = require('debug')('AppError:');
+const debug = require('debug')('AppError');
 
 module.exports = AppError;
 
@@ -9,6 +9,7 @@ const publicErrorMessageKeyByCode = {
   400: 'Bad Request',
   401: 'Not Authorized',
   404: 'Not Found',
+  409: 'Conflict',
   500: 'Internal Server Error'
 };
 
@@ -43,6 +44,7 @@ AppError.isAppError     = isAppError;
  */ 
 function newAppError(code, message) {
   let publicErrorMessage = publicErrorMessageKeyByCode[code];
+  debug(`newAppError, CODE: ${code}, MESSAGE: ${message}`);
   
   if (!code || !message || !publicErrorMessage) {
     debug(`newAppError called with incorrect arguments, defaulting to status 500. SUPPLIED VALUES: CODE ${code} MESSAGE ${message}`);
@@ -60,5 +62,6 @@ function newAppError(code, message) {
 * @return {boolean}       flag for whether it is an instance of the constructor above (true) or not (false)
 */
 function isAppError(err) {
+  debug('isAppError', err instanceof AppError);
   return err instanceof AppError;
 }

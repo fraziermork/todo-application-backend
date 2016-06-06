@@ -2,20 +2,27 @@
 
 const mongoose  = require('mongoose');
 const bcrypt    = require('bcrypt');
-const jwt       = require('jwt');
+const jwt       = require('jsonwebtoken');
+const debug     = require('debug')('User');
 
 
+// TODO: write validator to check if email is a valid email
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, 
+  // password: { type: String, required: true }, 
+  password: { type: String, required: true },
   email:    { type: String, required: true, unique: true },
   // lists:    [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }], 
   creationDate: { type: Date, default: Date.now }
 });
 
 userSchema.pre('save', function(next) {
-  this.password = bcrypt.hashSync(this.password, bcrypt.genSaltSync(20));
-  next();
+  debug('pre user save');
+  bcrypt.hash(this.password, 10, (err, hashedPassword) => {
+    debug(`User save callback, err: ${err}, hash: ${hashedPassword}`);
+    this.password = hashedPassword;
+    next();
+  });
 });
 
 userSchema.methods.comparePassword = function(password) {

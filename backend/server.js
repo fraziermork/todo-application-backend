@@ -1,16 +1,16 @@
 'use strict';
 
 // HANDLE PORTS AND ENVIRONMENT VARIABLES
-const DB_PORT           = process.env.MONGOLAB_URI || 'mongodb://localhost/note';
+const DB_PORT           = process.env.MONGOLAB_URI || 'mongodb://localhost/db';
 const API_PORT          = process.env.API_PORT || 3000;
 
 // LOAD NPM MODULES
 const express           = require('express');
-const bodyParser        = require('body-parser');
+const bodyParser        = require('body-parser').json();
 const mongoose          = require('mongoose');
 const Promise           = require('bluebird');
 const morgan            = require('morgan');
-const debug             = require('debug')('SERVER:');
+const debug             = require('debug')('SERVER');
 
 // LOAD CUSTOM MIDDLEWARES
 const errMidware        = require(`${__dirname}/lib/error-response-middleware`);
@@ -25,7 +25,7 @@ const newAccountRouter  = require(`${__dirname}/routes/new-account`);
 
 // HANDLE SETUP 
 const app               = express();
-Promise.promisifyAll(mongoose);
+// Promise.promisifyAll(mongoose);
 
 // HANDLE DATABASE SETUP 
 mongoose.connect(DB_PORT);
@@ -35,6 +35,13 @@ mongoose.connect(DB_PORT);
 // ATTACH SHARED MIDDLEWARE 
 app.use(morgan('dev'));
 app.use(bodyParser); 
+app.use((req, res, next) => {
+  debug('a request was made');
+  res.header('Access-Control-Allow-Origin', `http://localhost:${API_PORT}`);
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  next();
+});
 
 // UNAUTHENTICATED ROUTES
 app.use('/new-account', newAccountRouter);
@@ -48,7 +55,7 @@ app.use('/new-account', newAccountRouter);
 
 // FINISH SETUP
 app.all('*', function return404NotFound(_, res) {
-  debug('*: 404 Not Found');
+  debug('*:404');
   return res.status(404).send('Not Found');
 });
 app.use(errMidware);

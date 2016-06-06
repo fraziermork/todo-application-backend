@@ -1,6 +1,7 @@
 'use strict';
 
 const chalk = require('chalk');
+const debug = require('debug')('log');
 
 // Translation key between log method and chalk color
 const logMethodToColor = {
@@ -22,6 +23,7 @@ function createLogFunction(prefix, method) {
   // console.log(`createLogFunction ${prefix} ${method}`);
   
   return function() {
+    debug(`${method} log called`);
     // Build a real array from the arguments object
     let args = Array.prototype.slice.call(arguments);
     
