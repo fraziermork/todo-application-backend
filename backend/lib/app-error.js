@@ -14,8 +14,6 @@ const publicErrorMessageKeyByCode = {
   500: 'Internal Server Error'
 };
 
-
-
 /**
  * AppError - Contructor function
  *  
@@ -23,38 +21,25 @@ const publicErrorMessageKeyByCode = {
  * @param  {string} internalMessage   description 
  * @param  {string} publicMessage     description 
  */ 
-function AppError(statusCode, internalMessage, publicMessage) {
+function AppError(statusCode, internalMessage) {
   Error.call(this);
   this.internalMessage  = internalMessage;
   this.statusCode       = statusCode;
-  this.publicMessage    = publicMessage;  
+  this.publicMessage    = publicErrorMessageKeyByCode[this.statusCode];
+  
+  if (!statusCode || !internalMessage || !publicErrorMessageKeyByCode[statusCode]) {
+    debug(`AppError called with incorrect arguments, defaulting to status 500. SUPPLIED VALUES: CODE ${statusCode} MESSAGE ${internalMessage}`);
+    this.statusCode     = 500;
+    this.publicMessage  = publicErrorMessageKeyByCode[this.statusCode];
+  }
 }
 
 // Build the AppError prototype and attach constructor's methods
 AppError.prototype      = Object.create(Error.prototype);
-AppError.newAppError    = newAppError;
 AppError.isAppError     = isAppError; 
 
 
-/**
- * returnAppError - returns a new AppError with the message, status code, and appropriate public error message 
- *  
- * @param  {type} code    description 
- * @param  {type} message description 
- * @return {type}         description 
- */ 
-function newAppError(code, message) {
-  let publicErrorMessage = publicErrorMessageKeyByCode[code];
-  debug(`newAppError, CODE: ${code}, MESSAGE: ${message}`);
-  
-  if (!code || !message || !publicErrorMessage) {
-    debug(`newAppError called with incorrect arguments, defaulting to status 500. SUPPLIED VALUES: CODE ${code} MESSAGE ${message}`);
-    code = 500;
-    publicErrorMessage = publicErrorMessageKeyByCode[code];
-  }
-  
-  return new AppError(code, message, publicErrorMessage);
-}
+
 
 /** 
 * isAppError - returns a boolean describing whether an error is an instance of the constructor above
@@ -68,6 +53,6 @@ function isAppError(err) {
 }
 
 
-// TODO: refactor to eliminate newAppError method, just use new, that way line number and file name of origin are preserved
+
 // TODO: figure out how to handle 401 responses, they require https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#4xx_Client_Error
 // need to figure out what 'realm' to use http://stackoverflow.com/questions/12701085/what-is-the-realm-in-basic-authentication

@@ -5,12 +5,12 @@
 // set up env variable to only use a particular test database
 const mongoose      = require('mongoose');
 process.env.MONGOLAB_URI = 'mongodb://localhost/todo_app_test';
+const server        = require(`${__dirname}/../server`);
+const port          = process.env.API_PORT || 3000;
 
 const btoa          = require('btoa');
 const debug         = require('debug')('loginRouterTest'); 
 const User          = require(`${__dirname}/../resources/user/user-model`);
-const port          = process.env.API_PORT || 3000;
-const server        = require(`${__dirname}/../server`);
 const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
 
 // Set up chai 

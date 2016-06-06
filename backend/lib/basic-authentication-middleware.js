@@ -19,7 +19,7 @@ function basicAuthMidware(req, res, next) {
   try {
     if (!req.headers.authorization) {
       debug('no authorization headers present');
-      return next(AppError.newAppError(401, 'no authorization headers present'));
+      return next(new AppError(401, 'no authorization headers present'));
     }
     let b64AuthString           = req.headers.authorization.split(' ')[1];
     let authBuffer              = new Buffer(b64AuthString, 'base64');
@@ -34,6 +34,6 @@ function basicAuthMidware(req, res, next) {
       .catch(next);
   } catch (err) {
     debug('basicAuthMidware catch block');
-    return next(AppError.newAppError(400, 'failed to parse authorization headers as base64'));
+    return next(new AppError(400, 'failed to parse authorization headers as base64'));
   }
 }

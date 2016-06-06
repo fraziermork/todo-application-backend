@@ -21,7 +21,7 @@ function newUser(reqBody) {
   return new Promise((resolve, reject) => {
     if (!reqBody.username || !reqBody.password || !reqBody.email) {
       debug('incorrect credentions provided, rejecting');
-      return reject(AppError.newAppError(400, `Either username (${reqBody.username}) or password (${reqBody.password}) or email (${reqBody.email}) not provided.`));
+      return reject(new AppError(400, `Either username (${reqBody.username}) or password (${reqBody.password}) or email (${reqBody.email}) not provided.`));
     }
     
     // Ensure that only the desired info gets through 
@@ -36,7 +36,7 @@ function newUser(reqBody) {
       debug('user create callback');
       if (err) {
         debug('error creating user, rejecting', err);
-        return reject(AppError.newAppError(400, err));
+        return reject(new AppError(400, err));
       } 
       debug('user created, resolving');
       return resolve(user);
@@ -62,7 +62,7 @@ function findByUsername(username, password) {
       debug('User findOne callback');
       if (err || !user || !user.comparePassword(password)) {
         debug('incorrect password');
-        return reject(AppError.newAppError(401, err || 'incorrect username or password'));
+        return reject(new AppError(401, err || 'incorrect username or password'));
       }
       return resolve(user);
     });

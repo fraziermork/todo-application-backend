@@ -15,7 +15,7 @@ module.exports    = loginRouter;
 loginRouter.get('/', (req, res, next) => {
   debug('GET made to /login');
   if (!req.user) {
-    return next(AppError.newAppError(400, 'user not found attached to req, middleware failed'));
+    return next(new AppError(400, 'user not found attached to req, middleware failed'));
   }
   delete req.user.password;
   let resBody = {
