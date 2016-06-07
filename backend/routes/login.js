@@ -2,7 +2,6 @@
 
 const debug       = require('debug')('loginRouter');
 const AppError    = require(`${__dirname}/../lib/app-error`);
-// const User        = require(`${__dirname}/../resources/user/user-model`);
 
 const loginRouter = require('express').Router();
 module.exports    = loginRouter;
@@ -19,8 +18,8 @@ loginRouter.get('/', (req, res, next) => {
   }
   delete req.user.password;
   let resBody = {
-    user: req.user, 
-    token: req.user.generateToken()
+    user:   req.user, 
+    token:  req.user.generateToken()
   };
   return res.status(200).json(resBody);
 });

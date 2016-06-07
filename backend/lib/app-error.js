@@ -38,14 +38,11 @@ function AppError(statusCode, internalMessage) {
 AppError.prototype      = Object.create(Error.prototype);
 AppError.isAppError     = isAppError; 
 
-
-
-
 /** 
 * isAppError - returns a boolean describing whether an error is an instance of the constructor above
 * 
-* @param  {object}  err   the error to check 
-* @return {boolean}       flag for whether it is an instance of the constructor above (true) or not (false)
+* @param  {object}  err   the error object to check 
+* @return {boolean}       whether it is an instance of AppError or not
 */
 function isAppError(err) {
   debug('isAppError ', err instanceof AppError);

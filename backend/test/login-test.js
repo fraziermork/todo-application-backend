@@ -38,7 +38,6 @@ describe('ENDPOINT: /login', () => {
       done();
     });
   });
-  
   after('close server afterwards and drop database', (done) => {
     debug('after block');
     manageServer.closeServerAndDbAfterTests(done);

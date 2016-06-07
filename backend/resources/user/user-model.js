@@ -9,11 +9,10 @@ const debug     = require('debug')('User');
 // TODO: write validator to check if email is a valid email
 // TODO: implement lists
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  // password: { type: String, required: true }, 
-  password: { type: String, required: true },
-  email:    { type: String, required: true, unique: true },
-  lists:    [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }], 
+  username:     { type: String, required: true, unique: true },
+  password:     { type: String, required: true },
+  email:        { type: String, required: true, unique: true },
+  lists:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }], 
   creationDate: { type: Date, default: Date.now }
 });
 
