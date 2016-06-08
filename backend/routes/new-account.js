@@ -28,8 +28,5 @@ newAccountRouter.post('/', (req, res, next) => {
       };
       return res.status(200).json(resBody);
     })
-    .catch((err) => {
-      debug('newAccountRouter POST catch');
-      next(err);
-    });
+    .catch(next);
 });

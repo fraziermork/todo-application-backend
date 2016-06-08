@@ -7,7 +7,6 @@ const debug     = require('debug')('User');
 
 
 // TODO: write validator to check if email is a valid email
-// TODO: implement lists
 const userSchema = new mongoose.Schema({
   username:     { type: String, required: true, unique: true },
   password:     { type: String, required: true },

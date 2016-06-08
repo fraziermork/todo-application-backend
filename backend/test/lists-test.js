@@ -1,6 +1,6 @@
 'use strict';
 
-// DEBUG=manageServer,SERVER,listsCtrl,User,AppError,errMidware,listsRouterTest,listsRouter,tokenAuthMidware,userCtrl,User
+// DEBUG=manageServer,SERVER,listCtrl,User,AppError,errMidware,listsRouterTest,listsRouter,tokenAuthMidware,userCtrl,User,List
 
 // set up env variable to only use a particular test database
 const mongoose      = require('mongoose');
@@ -46,8 +46,9 @@ describe('ENDPOINT: /lists', () => {
   after('close server afterwards and drop database', (done) => {
     manageServer.closeServerAndDbAfterTests(done);
   });
-  
-  
+  // ////////////////////////////////////////
+  // POST /lists
+  // ////////////////////////////////////////
   describe('testing POST success', () => {
     before('make POST request beforehand', (done) => {
       this.postedList = {
@@ -132,4 +133,75 @@ describe('ENDPOINT: /lists', () => {
       });
     });
   });
+  
+  
+  
+  
+  
+  
+  // ////////////////////////////////////////
+  // GET /lists
+  // ////////////////////////////////////////
+  describe('testing GET all success', () => {
+    before('adding lists to find beforehand', (done) => {
+      this.testList = {
+        name:         'Union victories', 
+        description:  'Civil war battles that the Union won.', 
+        owner:        currentUser._id.toString()
+      };
+      request.post('/lists')
+        .set('Authorization', `Token ${authToken}`)
+        .send(this.testList)
+        .end((err, res) => {
+          if (err) debug(`ERROR POSTING LIST: ${err}`);
+          this.testList = res.body;
+          done();
+        });
+    });
+    before('making GET request beforehand', (done) => {
+      request.get('/lists')
+        .set('Authorization', `Token ${authToken}`)
+        .end((err, res) => {
+          this.err = err;
+          this.res = res;
+          done();
+        });
+    });
+    it('should return all of your lists', () => {
+      expect(this.err).to.equal(null);
+      expect(this.res.status).to.equal(200);
+      expect(this.res.body).to.be.instanceof(Array);
+      expect(this.res.body.length).to.not.equal(0);
+      
+      let arrayOfTestList = this.res.body.filter((list) => {
+        return list._id === this.testList._id.toString();
+      });
+      expect(arrayOfTestList.length).to.not.equal(0);
+      expect(arrayOfTestList[0].name).to.equal('Union victories');
+    });
+  });
+  
+  describe('testing GET all errors', () => {
+    describe('it should error out if no auth token provided', () => {
+      before('making GET request beforehand', (done) => {
+        request.get('/lists')
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 401 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(401);
+        expect(this.res.body).to.eql({});
+      });
+    });
+  });
 });
+
+
+
+
+
+  

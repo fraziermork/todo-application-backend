@@ -32,7 +32,7 @@ function newUser(reqBody) {
       email:    reqBody.email
     };
     
-    // TODO: check the error type to determine if it failed validation or if it was a duplicate
+    // TODO: check the error type to determine if it failed validation (400) or if it was a duplicate (409)
     User.create(userInfo, (err, user) => {
       debug('user create callback');
       if (err) {
@@ -70,6 +70,14 @@ function findByUsername(username, password) {
   });
 }
 
+
+
+/**
+ * findByAuthToken - this looks up a user by the authorization token that the y provide in their requests
+ *  
+ * @param  {string}   token   a string that is an encoded jsonwebtoken  
+ * @return {promise}          a promise that resolves with the user the webtoken belongs to or rejects with an appError 
+ */ 
 function findByAuthToken(token) {
   debug('findByAuthToken');
   return new Promise((resolve, reject) => {
@@ -110,10 +118,10 @@ function updateUserLists(userId, listId, removeFlag) {
   debug('updateUserLists');
   return new Promise((resolve, reject) => {
     let update        = {};
-    let operation     = removeFlag ? '$set' : '$push'; 
+    let operation     = removeFlag ? '$pull' : '$push'; 
     update[operation] = { lists: listId };
     
-    User.findOneAndUpdate({ _id: userId }, update)
+    User.findOneAndUpdateAsync({ _id: userId }, update)
       .then((user) => {
         debug('updateUserLists then');
         return resolve(user);
@@ -124,3 +132,6 @@ function updateUserLists(userId, listId, removeFlag) {
       });
   });
 }
+
+
+// TODO: write a delete method 
