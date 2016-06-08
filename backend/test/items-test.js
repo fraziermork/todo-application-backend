@@ -59,7 +59,6 @@ describe('ENDPOINT: /lists/:listId/items', () => {
         done();
       });
   });
-  
   after('close server afterwards and drop database', (done) => {
     manageServer.closeServerAndDbAfterTests(done);
   });

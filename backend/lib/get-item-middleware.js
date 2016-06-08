@@ -19,7 +19,9 @@ function getItemMidware(req, res, next) {
   debug('getItemMidware');
   itemCtrl.getItem(req.params.itemId)
     .then((item) => {
-      if (req.list.indexOf(item.list.toString()) === -1) {
+      if (item.list.toString() !== req.list._id.toString()) {
+        debug('item.list: ', item.list.toString());
+        debug('req.list._id: ', req.list._id.toString());
         throw new AppError(400, 'specified item isnt attached to the specified list');
       }
       req.item = item;

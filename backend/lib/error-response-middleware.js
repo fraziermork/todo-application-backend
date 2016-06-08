@@ -8,13 +8,13 @@ module.exports  = errMidware;
 
 function errMidware(err, req, res, next) {
   debug('errMidware');
-  log.error(err.internalMessage);
   
   if (AppError.isAppError(err)) {
+    log.error(err.internalMessage);
     debug(`err was a valid AppError, status: ${err.statusCode} message: ${err.publicMessage}`);
     return res.status(err.statusCode).send(err.publicMessage);
   } 
-  
+  log.error(err.message);
   res.status(500).send('Internal Server Error');
   return next();
 }
