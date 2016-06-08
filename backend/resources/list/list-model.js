@@ -11,5 +11,4 @@ const listSchema  = new mongoose.Schema({
   // items:        [{ ref: 'Item', type: mongoose.Schema.Types.ObjectId}]
 });
 
-debug('exporting listSchema');
 module.exports    = mongoose.model('List', listSchema);

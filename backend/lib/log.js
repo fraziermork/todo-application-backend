@@ -20,7 +20,6 @@ const logMethodToColor = {
  */ 
 function createLogFunction(prefix, method) {
   method = method || 'log';
-  // console.log(`createLogFunction ${prefix} ${method}`);
   
   return function() {
     debug(`${method} log called`);

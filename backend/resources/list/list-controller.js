@@ -80,7 +80,9 @@ function getList(listId) {
   return new Promise((resolve, reject) => {
     if (!listId) return reject(new AppError(400, 'no listId provided'));
     List.findById(listId, (err, list) => {
-      if (err || !list) return reject(new AppError(404, err || 'no list found'));
+      if (err || !list) {
+        return reject(new AppError(404, err || 'no list found'));
+      } 
       return resolve(list);
     });
   });

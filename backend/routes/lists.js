@@ -1,12 +1,12 @@
 'use strict';
 
-const debug       = require('debug')('listsRouter');
-const AppError    = require(`${__dirname}/../lib/app-error`);
-const listCtrl    = require(`${__dirname}/../resources/list/list-controller`);
-debug('listsRouter required in');
+const debug           = require('debug')('listsRouter');
+const getListMidware  = require(`${__dirname}/../lib/get-list-middleware`);
+const AppError        = require(`${__dirname}/../lib/app-error`);
+const listCtrl        = require(`${__dirname}/../resources/list/list-controller`);
 
-const listsRouter = require('express').Router();
-module.exports    = listsRouter;
+const listsRouter     = require('express').Router();
+module.exports        = listsRouter;
 
 
 
@@ -39,25 +39,18 @@ listsRouter.route('/')
       .catch(next);
   });
 
-
-
-
-
-
+// Attaches requested list to req, ensures that authenticated user owns that list
+listsRouter.use('/:id', getListMidware);
 
 listsRouter.route('/:id')
+  
   // GET route for retrieving a single list owned by the authenticated user
   .get((req, res, next) => {
-    debug('GET made to /lists/:id'); 
-    listCtrl.getList(req.params.id)
-      .then((list) => {
-        debug('GET /lists/:id then');
-        if (list.owner.toString() !== req.user._id.toString()) {
-          throw new AppError(401, 'user tried to access a list that doesnt belong to them');
-        }
-        return res.status(200).json(list);
-      })
-      .catch(next);
+    debug('GET made to /lists/:id');
+    if (!req.list) {
+      return next(new AppError(500, 'get list middleware broke'));
+    }
+    return res.status(200).json(req.list);
   })
   
   // PUT route for updating a single list owned by the authenticated user
@@ -71,14 +64,7 @@ listsRouter.route('/:id')
     delete req.body.owner;
     delete req.body.items;
     
-    listCtrl.getList(req.params.id)
-      .then((list) => {
-        debug('PUT /lists/:id then, list found');
-        if (list.owner.toString() !== req.user._id.toString()) {
-          throw new AppError(401, 'user tried to change a list that doesnt belong to them');
-        } 
-        return listCtrl.updateList(req.params.id, req.body);
-      })
+    listCtrl.updateList(req.params.id, req.body)
       .then((list) => {
         debug('PUT /lists/:id then, list updated');
         return res.status(200).json(list);
@@ -89,17 +75,10 @@ listsRouter.route('/:id')
   // DELETE route for deleting a single list owned by the authenticated user
   .delete((req, res, next) => {
     debug('DELETE made to /lists/:id');
-    listCtrl.getList(req.params.id)
-      .then((list) => {
-        if (list.owner.toString() !== req.user._id.toString()) {
-          throw new AppError(401, 'user tried to delete a list that doesnt belong to them');
-        } 
-        return listCtrl.deleteList(req.params.id);
-      })
+    listCtrl.deleteList(req.params.id)
       .then(() => {
         return res.status(204).end();
       })
       .catch(next);
   });
   
-// TODO: refactor so that the shared code between the get, put, and delete routes is handled by a middleware  
