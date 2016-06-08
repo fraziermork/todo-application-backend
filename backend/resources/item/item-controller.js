@@ -3,7 +3,7 @@
 // const Promise             = require('bluebird');
 const debug               = require('debug')('itemCtrl');
 const Item                = require(`${__dirname}/item-model`);
-const listCtrl            = require(`${__dirname}/../user/user-controller`);
+const listCtrl            = require(`${__dirname}/../list/list-controller`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 
 const itemCtrl            = module.exports = {};
@@ -28,9 +28,10 @@ function newItem(itemParams) {
         return reject(new AppError(400, err));
       })
       .then((item) => {
-        debug('newItem then into updateListItems');
+        debug('newItem then into updateListItems', item);
+        debug(`listId: ${item.list.toString()}, itemId: ${item._id.toString()}`);
         itemParams = item;
-        return listCtrl.updateListItems(itemParams.list, item._id);
+        return listCtrl.updateListItems(item.list.toString(), item._id.toString());
       })
       .then((list) => {
         debug('newItem then, resolving w/ saved item');

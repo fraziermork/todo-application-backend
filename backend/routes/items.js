@@ -13,7 +13,8 @@ itemsRouter.route('/')
   .post((req, res, next) => {
     debug('POST to /lists/:listId/items');
     let itemParams  = req.body;
-    itemParams.list = req.params.listId;
+    // itemParams.list = req.params.listId;
+    itemParams.list = req.list._id.toString();
     itemCtrl.newItem(itemParams)
       .then((item) => {
         return res.status(200).json(item);
