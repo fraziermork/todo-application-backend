@@ -3,6 +3,7 @@
 // const Promise             = require('bluebird');
 const debug               = require('debug')('listCtrl');
 const List                = require(`${__dirname}/list-model`);
+// const itemCtrl            = require(`${__dirname}/../item/item-controller`);
 const userCtrl            = require(`${__dirname}/../user/user-controller`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 
@@ -13,30 +14,32 @@ listCtrl.getAllLists      = getAllLists;
 listCtrl.getList          = getList;
 listCtrl.updateList       = updateList;
 listCtrl.deleteList       = deleteList;
+listCtrl.updateListItems  = updateListItems;
+
 
 /**
  * newList - creates a new list 
  *  
- * @param  {object} listContents  an object with properties for the new list
+ * @param  {object} listParams    an object with properties for the new list
  * @return {promise}              a promise that resolves with the new list or rejects with an appError 
  */ 
-function newList(listContents) {
+function newList(listParams) {
   debug('newList');
   return new Promise((resolve, reject) => {
     
-    List.createAsync(listContents)
+    List.createAsync(listParams)
       .catch((err) => {
-        debug('newList catch error from mongo');
+        debug('newList catch, mongo error');
         return reject(new AppError(400, err));
       })
       .then((list) => {
         debug('newList then into updateUserLists');
-        listContents = list;
-        return userCtrl.updateUserLists(listContents.owner, list._id);
+        listParams = list;
+        return userCtrl.updateUserLists(listParams.owner, list._id);
       })
       .then((user) => {
         debug('newList then, resolving with saved list');
-        return resolve(listContents);
+        return resolve(listParams);
       })
       .catch(reject);
   });
@@ -57,7 +60,7 @@ function getAllLists(listIds) {
       return resolve([]);
     }
     List.find({ _id: { $in: listIds }})
-      // .populate('items')
+      .populate('items')
       .exec((err, lists) => {
         debug('getAllLists callback');
         if (err) return reject(new AppError(404, err));
@@ -79,12 +82,14 @@ function getList(listId) {
   debug('getList');
   return new Promise((resolve, reject) => {
     if (!listId) return reject(new AppError(400, 'no listId provided'));
-    List.findById(listId, (err, list) => {
-      if (err || !list) {
-        return reject(new AppError(404, err || 'no list found'));
-      } 
-      return resolve(list);
-    });
+    List.findById(listId)
+      .populate('items')
+      .exec((err, list) => {
+        if (err || !list) {
+          return reject(new AppError(404, err || 'no list found'));
+        } 
+        return resolve(list);
+      });
   });
 }
 
@@ -92,19 +97,19 @@ function getList(listId) {
 /**
  * updateList - updates a lists properties, not to be used to modify a list's items 
  *  
- * @param  {string}     listId  the _id of the list to update
- * @param  {object}     content the incoming request body detailing the changes to make 
- * @return {promise}            a promise that resolves with the updated list or rejects with an appError 
+ * @param  {string}     listId      the _id of the list to update
+ * @param  {object}     listParams  the incoming request body detailing the changes to make 
+ * @return {promise}                a promise that resolves with the updated list or rejects with an appError 
  */ 
-function updateList(listId, content) {
+function updateList(listId, listParams) {
   debug('updateList');
   return new Promise((resolve, reject) => {
-    if (!content || Object.keys(content).length === 0) {
+    if (!listParams || Object.keys(listParams).length === 0) {
       return reject(new AppError(400, 'no update content provided'));
     }
     // TODO: figure out if I need to be more careful about which updates are being allowed through 
     List.findOneAndUpdate({ _id: listId }, 
-      { $set: content }, 
+      { $set: listParams }, 
       { runValidators: true, new: true }, 
       (err, list) => {
         if (err || !list) {
@@ -139,6 +144,37 @@ function deleteList(listId) {
       })
       .catch((err) => {
         return reject(new AppError(400, err));
+      });
+  });
+}
+
+
+
+
+/**
+ * updateListItems - Adds or removes the reference to an item from a list document
+ * TODO: refactor so that this is handled by save and remove hooks on Item?
+ *  
+ * @param  {string}   listId      the _id of the a list to add or remove an item from
+ * @param  {string}   itemId      the _id of an item to add or remove from a list
+ * @param  {boolean}  removeFlag  whether to remove the itemId (pull from document) from the list or not
+ * @return {promise}              a promise that resolves with the list or rejects with an appError 
+ */ 
+function updateListItems(listId, itemId, removeFlag) {
+  debug('updateListItems');
+  return new Promise((resolve, reject) => {
+    let update        = {};
+    let operation     = removeFlag ? '$pull' : '$push'; 
+    update[operation] = { items: itemId };
+    
+    List.findOneAndUpdateAsync({ _id: listId }, update, { runValidators: true, new: true })
+      .then((list) => {
+        debug('updateListItems then');
+        return resolve(list);
+      })
+      .catch((err) => {
+        debug('updateListItems catch');
+        return reject(new AppError(404, err));
       });
   });
 }

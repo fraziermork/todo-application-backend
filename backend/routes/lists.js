@@ -2,24 +2,21 @@
 
 const debug           = require('debug')('listsRouter');
 const getListMidware  = require(`${__dirname}/../lib/get-list-middleware`);
-const AppError        = require(`${__dirname}/../lib/app-error`);
+// const AppError        = require(`${__dirname}/../lib/app-error`);
 const listCtrl        = require(`${__dirname}/../resources/list/list-controller`);
 
 const listsRouter     = require('express').Router();
 module.exports        = listsRouter;
 
-
-
-
 listsRouter.route('/')
   // POST route for creating a new list owned by the authenticated user
   .post((req, res, next) => {
     debug('POST made to /lists');
-    let listContents    = req.body;
-    listContents.owner  = req.user._id;
-    listCtrl.newList(listContents)
+    // TODO: error on absence of req.user? This shouldn't happen ever, if the tokenAuthMidware works
+    let listParams    = req.body;
+    listParams.owner  = req.user._id;
+    listCtrl.newList(listParams)
       .then((list) => {
-        debug('list POST then');
         return res.status(200).json(list);
       })
       .catch(next);
@@ -40,22 +37,19 @@ listsRouter.route('/')
   });
 
 // Attaches requested list to req, ensures that authenticated user owns that list
-listsRouter.use('/:id', getListMidware);
+listsRouter.use('/:listId', getListMidware);
 
-listsRouter.route('/:id')
-  
+listsRouter.route('/:listId')
   // GET route for retrieving a single list owned by the authenticated user
   .get((req, res, next) => {
-    debug('GET made to /lists/:id');
-    if (!req.list) {
-      return next(new AppError(500, 'get list middleware broke'));
-    }
+    debug('GET made to /lists/:listId');
+    // TODO: add 500 error condition if no req.list? This shouldn't happen ever, if the getListMidware works
     return res.status(200).json(req.list);
   })
   
   // PUT route for updating a single list owned by the authenticated user
   .put((req, res, next) => {
-    debug('PUT made to /lists/:id'); 
+    debug('PUT made to /lists/:listId'); 
     
     // remove properties that they shouldn't be able to change
     // Item manipulation should be done through item routes, not through list routes
@@ -64,9 +58,9 @@ listsRouter.route('/:id')
     delete req.body.owner;
     delete req.body.items;
     
-    listCtrl.updateList(req.params.id, req.body)
+    listCtrl.updateList(req.params.listId, req.body)
       .then((list) => {
-        debug('PUT /lists/:id then, list updated');
+        debug('PUT /lists/:listId then, list updated');
         return res.status(200).json(list);
       })
       .catch(next);
@@ -74,11 +68,10 @@ listsRouter.route('/:id')
   
   // DELETE route for deleting a single list owned by the authenticated user
   .delete((req, res, next) => {
-    debug('DELETE made to /lists/:id');
-    listCtrl.deleteList(req.params.id)
+    debug('DELETE made to /lists/:listId');
+    listCtrl.deleteList(req.params.listId)
       .then(() => {
         return res.status(204).end();
       })
       .catch(next);
   });
-  

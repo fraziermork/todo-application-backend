@@ -1,7 +1,7 @@
 'use strict';
 
 const debug       = require('debug')('loginRouter');
-const AppError    = require(`${__dirname}/../lib/app-error`);
+// const AppError    = require(`${__dirname}/../lib/app-error`);
 
 const loginRouter = require('express').Router();
 module.exports    = loginRouter;
@@ -13,9 +13,6 @@ module.exports    = loginRouter;
  */ 
 loginRouter.get('/', (req, res, next) => {
   debug('GET made to /login');
-  if (!req.user) {
-    return next(new AppError(400, 'user not found attached to req, middleware failed'));
-  }
   delete req.user.password;
   let resBody = {
     user:   req.user, 

@@ -73,7 +73,7 @@ function findByUsername(username, password) {
 
 
 /**
- * findByAuthToken - this looks up a user by the authorization token that the y provide in their requests
+ * findByAuthToken - this looks up a user by the authorization token that they provide in their requests
  *  
  * @param  {string}   token   a string that is an encoded jsonwebtoken  
  * @return {promise}          a promise that resolves with the user the webtoken belongs to or rejects with an appError 
@@ -107,12 +107,13 @@ function findByAuthToken(token) {
 
 
 /**
- * updateUserLists - Adds or removes references to lists from a user document
+ * updateUserLists - Adds or removes the reference to an item from a user document
+ * TODO: refactor so that this is handled by a mongoose middleware on save and remove hooks on List?
  *  
- * @param  {string}   userId      the _id of the lists owner 
- * @param  {string}    listId     the _id of a list 
- * @param  {boolean}  removeFlag  whether to remove the list id (pull from document) from the user or not
- * @return {promise}              a promise that resolves with the user or rejects with an app error 
+ * @param  {string}   userId      the _id of the user to add or remove the list from 
+ * @param  {string}   listId      the _id of a list to add or remove from the user
+ * @param  {boolean}  removeFlag  whether to remove the listId (pull from document) from the user or not
+ * @return {promise}              a promise that resolves with the user or rejects with an appError 
  */ 
 function updateUserLists(userId, listId, removeFlag) {
   debug('updateUserLists');
@@ -121,7 +122,7 @@ function updateUserLists(userId, listId, removeFlag) {
     let operation     = removeFlag ? '$pull' : '$push'; 
     update[operation] = { lists: listId };
     
-    User.findOneAndUpdateAsync({ _id: userId }, update)
+    User.findOneAndUpdateAsync({ _id: userId }, update, { runValidators: true, new: true })
       .then((user) => {
         debug('updateUserLists then');
         return resolve(user);
