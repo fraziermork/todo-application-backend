@@ -4,8 +4,9 @@
   "description": "This is a portfolio piece I built using angular 1.5, mongodb, express, and node.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start:db": "mongod -dbpath=./backend/data/db --smallfiles"
+    "test": "gulp test",
+    "start:db": "mongod -dbpath=./backend/data/db --smallfiles",
+    "start:backend": "nodemon ./backend/server.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
     "bcrypt": "^0.8.6",
     "bluebird": "^3.4.0",
     "body-parser": "^1.15.1",
+    "bootstrap": "^3.3.6",
     "chai-http": "^2.0.1",
     "chalk": "^1.1.3",
     "debug": "^2.2.0",
@@ -33,8 +35,13 @@
   },
   "devDependencies": {
     "angular-mocks": "^1.5.5",
+    "babel-core": "^6.9.1",
+    "babel-loader": "^6.2.4",
+    "babel-polyfill": "^6.9.1",
+    "babel-preset-es2015": "^6.9.0",
     "btoa": "^1.1.2",
     "chai": "^3.5.0",
+    "css-loader": "^0.23.1",
     "del": "^2.2.0",
     "gulp": "^3.9.1",
     "gulp-eslint": "^2.0.0",
@@ -45,12 +52,14 @@
     "karma-chrome-launcher": "^1.0.1",
     "karma-jasmine": "^1.0.2",
     "mocha": "^2.5.3",
-    "nodemon": "^1.9.2",
+    "protractor": "^3.3.0",
+    "style-loader": "^0.13.1",
     "superagent": "^2.0.0",
     "superagent-prefix": "0.0.2",
     "superagent-promise-plugin": "^3.2.0",
     "superagent-use": "0.0.1",
     "webpack": "^1.13.1",
+    "webpack-dev-server": "^1.14.1",
     "webpack-stream": "^3.2.0"
   }
 }
