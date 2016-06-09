@@ -28,7 +28,9 @@ function createLogFunction(prefix, method) {
     
     // Attach the prefix and log it 
     args.unshift(prefix);
-    console[method].apply(null, args);
+    if (process.env.ANGULAR_TODO_LOG_ERRORS) {
+      console[method].apply(null, args);
+    }
   };
 }
 
