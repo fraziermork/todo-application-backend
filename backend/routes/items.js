@@ -13,7 +13,6 @@ itemsRouter.route('/')
   .post((req, res, next) => {
     debug('POST to /lists/:listId/items');
     let itemParams  = req.body;
-    // itemParams.list = req.params.listId;
     itemParams.list = req.list._id.toString();
     itemCtrl.newItem(itemParams)
       .then((item) => {
@@ -25,7 +24,11 @@ itemsRouter.route('/')
   // GET route for all items in a list, req.list should exist from getListMidware, and if an error were to happen, it should have happened by now
   .get((req, res, next) => {
     debug('GET to /lists/:listId/items');
-    return res.status(200).json(req.list.items);
+    itemCtrl.getAllItems(req.list._id.toString())
+    .then((items) => {
+      return res.status(200).json(items);
+    })
+    .catch(next);
   });
 
 itemsRouter.use('/:itemId', getItemMidware);
@@ -62,5 +65,3 @@ itemsRouter.route('/:itemId')
       })
       .catch(next);
   });
-
-// TODO: establish a route to facilitate transferring items between lists? 

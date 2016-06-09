@@ -96,13 +96,14 @@ describe('ENDPOINT: /lists/:listId/items', () => {
         done();
       });
     });
-    it('should have saved the item to the list', (done) => {
-      List.findById(currentList._id.toString(), (err, list) => {
-        expect(list.items.length).to.equal(1);
-        expect(list.items[0].toString()).to.equal(this.res.body._id);
-        done();
-      });
-    });
+    // database flattened, so it no longer saves a reference to the item to the list
+    // it('should have saved the item to the list', (done) => {
+    //   List.findById(currentList._id.toString(), (err, list) => {
+    //     expect(list.items.length).to.equal(1);
+    //     expect(list.items[0].toString()).to.equal(this.res.body._id);
+    //     done();
+    //   });
+    // });
   });
   describe('testing POST errors', () => {
     describe('it should error out without an auth token', () => {

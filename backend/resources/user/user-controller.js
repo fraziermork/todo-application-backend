@@ -9,10 +9,9 @@ const userCtrl            = module.exports = {};
 userCtrl.newUser          = newUser;
 userCtrl.findByUsername   = findByUsername;
 userCtrl.findByAuthToken  = findByAuthToken;
-userCtrl.updateUserLists  = updateUserLists;
 
 /**
- * newUser - creates a new user in the database, doesn't need to populate
+ * newUser - creates a new user in the database
  *  
  * @param  {object} reqBody the body of an incoming post request to /new-account 
  * @return {promise}        a promise that resolves with the user or rejects with an appError 
@@ -58,7 +57,6 @@ function findByUsername(username, password) {
   debug('findByUsername');
   return new Promise((resolve, reject) => {
     User.findOne({ username })
-    .populate('lists')
     .exec((err, user) => {
       debug('User findOne callback');
       if (err || !user || !user.comparePassword(password)) {
@@ -91,7 +89,6 @@ function findByAuthToken(token) {
     }
     
     User.findById(decoded._id)
-      .populate('lists')
       .exec((err, user) => {
         if (err || !user) {
           debug(`failure in find user by id err: ${err}, user: ${user}`);
@@ -102,37 +99,3 @@ function findByAuthToken(token) {
       });
   });
 }
-
-
-
-
-/**
- * updateUserLists - Adds or removes the reference to an item from a user document
- * TODO: refactor so that this is handled by a mongoose middleware on save and remove hooks on List?
- *  
- * @param  {string}   userId      the _id of the user to add or remove the list from 
- * @param  {string}   listId      the _id of a list to add or remove from the user
- * @param  {boolean}  removeFlag  whether to remove the listId (pull from document) from the user or not
- * @return {promise}              a promise that resolves with the user or rejects with an appError 
- */ 
-function updateUserLists(userId, listId, removeFlag) {
-  debug('updateUserLists');
-  return new Promise((resolve, reject) => {
-    let update        = {};
-    let operation     = removeFlag ? '$pull' : '$push'; 
-    update[operation] = { lists: listId };
-    
-    User.findOneAndUpdateAsync({ _id: userId }, update, { runValidators: true, new: true })
-      .then((user) => {
-        debug('updateUserLists then');
-        return resolve(user);
-      })
-      .catch((err) => {
-        debug('updateUserLists catch');
-        return reject(new AppError(404, err));
-      });
-  });
-}
-
-
-// TODO: write a delete method 
