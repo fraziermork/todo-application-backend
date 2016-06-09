@@ -83,9 +83,17 @@ describe('ENDPOINT: /lists/:listId/items/:itemId', () => {
     manageServer.closeServerAndDbAfterTests(done);
   });
   
-  // ////////////////////////////////////////
+  
+  
+  
+  
+  
+  
+  
+  
+  // ////////////////////////////////////////////////////////////////////////////////
   // GET /items/:itemId 
-  // ////////////////////////////////////////
+  // ////////////////////////////////////////////////////////////////////////////////
   describe('testing GET item by id success', () => {
     let testItem = {
       name:     'Tammy', 
@@ -201,17 +209,181 @@ describe('ENDPOINT: /lists/:listId/items/:itemId', () => {
   });
   
   
-  // ////////////////////////////////////////
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  // ////////////////////////////////////////////////////////////////////////////////
   // PUT /items/:itemId 
-  // ////////////////////////////////////////
-  // describe('testing PUT item by id success', () => {});
-  // describe('testing PUT item by id errors', () => {});
+  // ////////////////////////////////////////////////////////////////////////////////
+  describe('testing PUT item by id success', () => {
+    let testItem = {
+      name:     'Tammy', 
+      content:  'Remember Bird Person'
+    };
+    let updates = {
+      content:  'Remember Bird Person. RIP.'
+    };
+    before('make the POST beforehand', (done) => {
+      request.post(`/lists/${currentList._id}/items`)
+        .set('Authorization', `Token ${authToken}`)
+        .send(testItem)
+        .end((err, res) => {
+          if (err) debug('ERROR POSTING ITEM BEFORE:', err);
+          testItem = res.body;
+          done();
+        });
+    });
+    before('make the PUT beforehand', (done) => {
+      request.put(`/lists/${currentList._id}/items/${testItem._id}`)
+        .set('Authorization', `Token ${authToken}`)
+        .send(updates)
+        .end((err, res) => {
+          this.err = err;
+          this.res = res;
+          done();
+        });
+    });
+    it('should have returned the updated item', () => {
+      expect(this.err).to.equal(null);
+      expect(this.res.status).to.equal(200);
+      expect(this.res.body.name).to.equal(testItem.name);
+      expect(this.res.body.content).to.equal(updates.content);
+    });
+    it('should have updated the item in the database', (done) => {
+      Item.findById(this.res.body._id, (err, item) => {
+        expect(err).to.equal(null);
+        expect(item.content).to.equal(updates.content);
+        done();
+      });
+    });
+    
+  });
+  describe('testing PUT item by id errors', () => {
+    let testItem = {
+      name:     'Zeep Xanflorp', 
+      content:  'dance dance'
+    };
+    let updates = {
+      content:  'dance dance, no revolution.'
+    };
+    before('make the POST beforehand', (done) => {
+      request.post(`/lists/${currentList._id}/items`)
+        .set('Authorization', `Token ${authToken}`)
+        .send(testItem)
+        .end((err, res) => {
+          if (err) debug('ERROR POSTING ITEM BEFORE:', err);
+          testItem = res.body;
+          done();
+        });
+    });
+    describe('failure when item doesnt exist', function() {
+      before('make the flawed PUT beforehand', (done) => {
+        request.put(`/lists/${currentList._id}/items/12345`)
+          .set('Authorization', `Token ${authToken}`)
+          .send(updates)
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 404 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(404);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    describe('failure when list doesnt exist', function() {
+      before('make the flawed PUT beforehand', (done) => {
+        request.put(`/lists/12345/items/${testItem._id}`)
+          .set('Authorization', `Token ${authToken}`)
+          .send(updates)
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 404 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(404);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    describe('failure on invalid information', () => {
+      before('make the flawed PUT beforehand', (done) => {
+        request.put(`/lists/${currentList._id}/items/${testItem._id}`)
+          .set('Authorization', `Token ${authToken}`)
+          .send({ creationDate: Date.now() })
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 400 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(400);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    describe('failure without authtoken', () => {
+      before('make the flawed PUT beforehand', (done) => {
+        request.put(`/lists/${currentList._id}/items/${testItem._id}`)
+          .send(updates)
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 401 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(401);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    describe('failure with wrong users authtoken', () => {
+      before('make the flawed PUT beforehand', (done) => {
+        request.put(`/lists/${currentList._id}/items/${testItem._id}`)
+          .set('Authorization', `Token ${otherAuthToken}`)
+          .send(updates)
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 401 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(401);
+        expect(this.res.body).to.eql({});
+      });
+    });
+  });
   
   
   
-  // ////////////////////////////////////////
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  // ////////////////////////////////////////////////////////////////////////////////
   // DELETE /items/:itemId 
-  // ////////////////////////////////////////
+  // ////////////////////////////////////////////////////////////////////////////////
   // describe('testing DELETE item by id success', () => {});
   // describe('testing DELETE item by id errors', () => {});
   
