@@ -384,8 +384,115 @@ describe('ENDPOINT: /lists/:listId/items/:itemId', () => {
   // ////////////////////////////////////////////////////////////////////////////////
   // DELETE /items/:itemId 
   // ////////////////////////////////////////////////////////////////////////////////
-  // describe('testing DELETE item by id success', () => {});
-  // describe('testing DELETE item by id errors', () => {});
+  describe('testing DELETE item by id success', () => {
+    let testItem = {
+      name:     'Tammy', 
+      content:  'Remember Bird Person'
+    };
+    before('make the POST beforehand', (done) => {
+      request.post(`/lists/${currentList._id}/items`)
+        .set('Authorization', `Token ${authToken}`)
+        .send(testItem)
+        .end((err, res) => {
+          if (err) debug('ERROR POSTING ITEM BEFORE:', err);
+          testItem = res.body;
+          done();
+        });
+    });
+    before('making GET request beforehand', (done) => {
+      request.delete(`/lists/${currentList._id}/items/${testItem._id.toString()}`)
+        .set('Authorization', `Token ${authToken}`)
+        .end((err, res) => {
+          this.err = err;
+          this.res = res;
+          done();
+        });
+    });
+    it('should return a 204', () => {
+      expect(this.err).to.equal(null);
+      expect(this.res.status).to.equal(204);
+    });
+    
+  });
+  describe('testing DELETE item by id errors', () => {
+    let testItem = {
+      name:     'Tammy', 
+      content:  'Remember Bird Person'
+    };
+    before('make the POST beforehand', (done) => {
+      request.post(`/lists/${currentList._id}/items`)
+        .set('Authorization', `Token ${authToken}`)
+        .send(testItem)
+        .end((err, res) => {
+          if (err) debug('ERROR POSTING ITEM BEFORE:', err);
+          testItem = res.body;
+          done();
+        });
+    });
+    describe('failure if list is wrong', () => {
+      before('making GET request beforehand', (done) => {
+        request.delete(`/lists/12345/items/${testItem._id.toString()}`)
+          .set('Authorization', `Token ${authToken}`)
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 404 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(404);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    describe('failure if item doesnt exist ', () => {
+      before('making GET request beforehand', (done) => {
+        request.delete(`/lists/${currentList._id}/items/12345`)
+          .set('Authorization', `Token ${authToken}`)
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 404 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(404);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    describe('failure if no auth token provided', () => {
+      before('making GET request beforehand', (done) => {
+        request.delete(`/lists/${currentList._id}/items/${testItem._id.toString()}`)
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 401 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(401);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    describe('failure if using wrong persons auth token', () => {
+      before('making GET request beforehand', (done) => {
+        request.delete(`/lists/${currentList._id}/items/${testItem._id.toString()}`)
+          .set('Authorization', `Token ${otherAuthToken}`)
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 401 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(401);
+        expect(this.res.body).to.eql({});
+      });
+    });
+  });
   
   
 });
