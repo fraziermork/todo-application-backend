@@ -4,14 +4,13 @@ const mongoose  = require('mongoose');
 const bcrypt    = require('bcrypt');
 const jwt       = require('jsonwebtoken');
 const debug     = require('debug')('User');
-
+const listCtrl  = require(`${__dirname}/../list/list-controller`);
 
 // TODO: write validator to check if email is a valid email
 const userSchema = new mongoose.Schema({
   username:     { type: String, required: true, unique: true },
   password:     { type: String, required: true },
   email:        { type: String, required: true, unique: true },
-  // lists:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }], 
   creationDate: { type: Date, default: Date.now }
 });
 
@@ -21,6 +20,19 @@ userSchema.pre('save', function(next) {
     this.password = hashedPassword;
     next();
   });
+});
+
+userSchema.pre('remove', function(next) {
+  debug('User pre remove');
+  listCtrl.deleteAllLists(this._id)
+    .then((items) => {
+      debug('sucessfully deleted all lists belonging to user pre user remove');
+      next();
+    })
+    .catch((err) => {
+      debug('ERROR removing lists belonging to user');
+      next();
+    });
 });
 
 userSchema.methods.comparePassword = function(password) {

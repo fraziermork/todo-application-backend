@@ -99,7 +99,3 @@ function findByAuthToken(token) {
       });
   });
 }
-
-
-
-// TODO: write a delete method 

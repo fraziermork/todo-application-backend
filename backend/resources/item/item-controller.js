@@ -3,7 +3,6 @@
 // const Promise             = require('bluebird');
 const debug               = require('debug')('itemCtrl');
 const Item                = require(`${__dirname}/item-model`);
-const listCtrl            = require(`${__dirname}/../list/list-controller`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 
 const itemCtrl            = module.exports = {};
@@ -13,6 +12,8 @@ itemCtrl.getAllItems      = getAllItems;
 itemCtrl.getItem          = getItem;
 itemCtrl.updateItem       = updateItem;
 itemCtrl.deleteItem       = deleteItem;
+itemCtrl.deleteAllItems   = deleteAllItems;
+
 
 /**
  * newItem - creates a new item
@@ -119,7 +120,6 @@ function deleteItem(itemId) {
   return new Promise((resolve, reject) => {
     Item.findOneAndRemoveAsync({ _id: itemId })
       .then(() => {
-        debug('Item.findOneAndRemoveAsync then');
         return resolve();
       })
       .catch((err) => {
@@ -129,4 +129,24 @@ function deleteItem(itemId) {
 }
 
 
+
+/**
+ * deleteAllItems - deletes all items belonging to a list
+ *  
+ * @param  {string} listId  the _id of the list
+ * @return {promise}        a promise that resolves with the deleted items or rejects with an appError 
+ */ 
+function deleteAllItems(listId) {
+  debug('deleteAllItems');
+  return new Promise((resolve, reject) => {
+    Item.find({ list: listId })
+      .remove()
+      .exec((err, items) => {
+        if (err) {
+          return reject(new AppError(400, 'error deleting all items'));
+        }
+        return resolve(items);
+      });
+  });
+}
 // TODO: write a method to delete all items that belong to a list

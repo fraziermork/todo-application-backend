@@ -1,10 +1,9 @@
 'use strict';
 
-// const Promise             = require('bluebird');
+
 const debug               = require('debug')('listCtrl');
 const List                = require(`${__dirname}/list-model`);
-// const itemCtrl            = require(`${__dirname}/../item/item-controller`);
-const userCtrl            = require(`${__dirname}/../user/user-controller`);
+const itemCtrl            = require(`${__dirname}/../item/item-controller`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 
 
@@ -14,7 +13,7 @@ listCtrl.getAllLists      = getAllLists;
 listCtrl.getList          = getList;
 listCtrl.updateList       = updateList;
 listCtrl.deleteList       = deleteList;
-
+listCtrl.deleteAllLists   = deleteAllLists;
 
 /**
  * newList - creates a new list 
@@ -126,11 +125,37 @@ function deleteList(listId) {
   return new Promise((resolve, reject) => {
     List.findOneAndRemoveAsync({ _id: listId })
       .then((list) => {
-        debug('userCtrl.updateUserLists then');
+        return itemCtrl.deleteAllItems(listId);
+      })
+      .then((items) => {
+        debug('all items deleted');
         return resolve();
       })
       .catch((err) => {
         return reject(new AppError(400, err));
+      });
+  });
+}
+
+
+
+
+/**
+ * deleteAllLists - deletes all lists belonging to a user
+ *  
+ * @param  {string} userId  the id of the user 
+ * @return {promise}        a promise that resolves with the deleted lists or rejects with an appError 
+ */ 
+function deleteAllLists(userId) {
+  debug('deleteAllLists');
+  return new Promise((resolve, reject) => {
+    List.find({ owner: userId })
+      .remove()
+      .exec((err, lists) => {
+        if (err) {
+          return reject(new AppError(400, 'error deleting all lists'));
+        }
+        return resolve(lists);
       });
   });
 }
