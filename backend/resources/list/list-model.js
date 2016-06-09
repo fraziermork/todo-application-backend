@@ -9,8 +9,8 @@ const listSchema  = new mongoose.Schema({
   name:           { type: String, required: true },
   creationDate:   { type: Date, default: Date.now },
   description:    String,
-  owner:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  items:          [{ ref: 'Item', type: mongoose.Schema.Types.ObjectId}]
+  owner:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  // items:          [{ ref: 'Item', type: mongoose.Schema.Types.ObjectId}]
 });
 
 module.exports    = mongoose.model('List', listSchema);

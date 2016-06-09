@@ -373,15 +373,16 @@ describe('ENDPOINT: /lists/:id', () => {
           done();
         });
       });
-      it('should have removed a reference to the list from the user', (done) => {
-        User.findById(currentUser._id.toString(), (err, user) => {
-          expect(err).to.equal(null);
-          
-          // confirm that this would work 
-          expect(user.lists.indexOf(testList._id)).to.equal(-1);
-          done();
-        });
-      });
+      // after database flattening, the user no longer tracks the lists that belong to them
+      // it('should have removed a reference to the list from the user', (done) => {
+      //   User.findById(currentUser._id.toString(), (err, user) => {
+      //     expect(err).to.equal(null);
+      //     
+      //     // confirm that this would work 
+      //     expect(user.lists.indexOf(testList._id)).to.equal(-1);
+      //     done();
+      //   });
+      // });
     });
     describe('errors', function() {
       this.timeout(5000);

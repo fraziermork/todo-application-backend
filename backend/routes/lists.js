@@ -12,7 +12,6 @@ listsRouter.route('/')
   // POST route for creating a new list owned by the authenticated user
   .post((req, res, next) => {
     debug('POST made to /lists');
-    // TODO: error on absence of req.user? This shouldn't happen ever, if the tokenAuthMidware works
     let listParams    = req.body;
     listParams.owner  = req.user._id;
     listCtrl.newList(listParams)
@@ -25,10 +24,7 @@ listsRouter.route('/')
   // GET route for getting all of the authenticated user's lists
   .get((req, res, next) => {
     debug('GET made to /lists');    
-    let listIds = req.user.lists.map((list) => {
-      return list._id.toString();
-    });
-    listCtrl.getAllLists(listIds)
+    listCtrl.getAllLists(req.user._id.toString())
       .then((lists) => {
         debug('list GET all then');
         return res.status(200).json(lists);
@@ -43,7 +39,6 @@ listsRouter.route('/:listId')
   // GET route for retrieving a single list owned by the authenticated user
   .get((req, res, next) => {
     debug('GET made to /lists/:listId');
-    // TODO: add 500 error condition if no req.list? This shouldn't happen ever, if the getListMidware works
     return res.status(200).json(req.list);
   })
   
@@ -52,11 +47,9 @@ listsRouter.route('/:listId')
     debug('PUT made to /lists/:listId'); 
     
     // remove properties that they shouldn't be able to change
-    // Item manipulation should be done through item routes, not through list routes
     delete req.body._id;
     delete req.body.creationDate;
     delete req.body.owner;
-    delete req.body.items;
     
     listCtrl.updateList(req.params.listId, req.body)
       .then((list) => {

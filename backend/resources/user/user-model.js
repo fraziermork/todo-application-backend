@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   username:     { type: String, required: true, unique: true },
   password:     { type: String, required: true },
   email:        { type: String, required: true, unique: true },
-  lists:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }], 
+  // lists:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }], 
   creationDate: { type: Date, default: Date.now }
 });
 

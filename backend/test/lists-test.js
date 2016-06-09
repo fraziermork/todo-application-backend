@@ -83,13 +83,14 @@ describe('ENDPOINT: /lists', () => {
         done();
       });
     });
-    it('should have saved the list to the user', (done) => {
-      User.findById(currentUser._id.toString(), (err, user) => {
-        expect(user.lists.length).to.equal(1);
-        expect(user.lists[0].toString()).to.equal(this.res.body._id);
-        done();
-      });
-    });
+    // Database flattened, so it no longer saves a reference to the user
+    // it('should have saved the list to the user', (done) => {
+    //   User.findById(currentUser._id.toString(), (err, user) => {
+    //     expect(user.lists.length).to.equal(1);
+    //     expect(user.lists[0].toString()).to.equal(this.res.body._id);
+    //     done();
+    //   });
+    // });
   });
   
   describe('testing POST errors', () => {

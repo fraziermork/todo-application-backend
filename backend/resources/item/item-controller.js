@@ -9,6 +9,7 @@ const AppError            = require(`${__dirname}/../../lib/app-error`);
 const itemCtrl            = module.exports = {};
 
 itemCtrl.newItem          = newItem;
+itemCtrl.getAllItems      = getAllItems;
 itemCtrl.getItem          = getItem;
 itemCtrl.updateItem       = updateItem;
 itemCtrl.deleteItem       = deleteItem;
@@ -28,16 +29,32 @@ function newItem(itemParams) {
         return reject(new AppError(400, err));
       })
       .then((item) => {
-        debug('newItem then into updateListItems', item);
-        debug(`listId: ${item.list.toString()}, itemId: ${item._id.toString()}`);
-        itemParams = item;
-        return listCtrl.updateListItems(item.list.toString(), item._id.toString());
-      })
-      .then((list) => {
         debug('newItem then, resolving w/ saved item');
-        return resolve(itemParams);
+        return resolve(item);
       })
       .catch(reject);
+  });
+}
+
+
+/**
+ * getAllItems - finds all items that belong to a list with the given _id
+ *  
+ * @param  {string}   listId  the _id of the list whose items we want to find 
+ * @return {promise}          a promise that resolves with all the items for that list or rejects with an appError 
+ */ 
+function getAllItems(listId) {
+  debug('getAllItems');
+  return new Promise((resolve, reject) => {
+    if (!listId) {
+      return reject(new AppError(404, 'no listId provided'));
+    }
+    Item.find({ list: listId })
+      .exec((err, items) => {
+        debug('getAllItems callback');
+        if (err) return reject(new AppError(404, err));
+        return resolve(items);
+      });
   });
 }
 
@@ -99,15 +116,10 @@ function updateItem(itemId, itemParams) {
  */ 
 function deleteItem(itemId) {
   debug('deleteItem');
-  // TODO: need to remove references from list 
   return new Promise((resolve, reject) => {
     Item.findOneAndRemoveAsync({ _id: itemId })
-      .then((item) => {
-        debug('Item.findOneAndRemoveAsync then');
-        return listCtrl.updateListItems(item.list.toString(), itemId, true);
-      })
       .then(() => {
-        debug('listCtrl.updateListItems then');
+        debug('Item.findOneAndRemoveAsync then');
         return resolve();
       })
       .catch((err) => {
@@ -115,3 +127,6 @@ function deleteItem(itemId) {
       });
   });
 }
+
+
+// TODO: write a method to delete all items that belong to a list

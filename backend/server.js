@@ -37,7 +37,7 @@ mongoose.connect(DB_PORT);
 app.use(morgan('dev'));
 app.use(bodyParser); 
 app.use((req, res, next) => {
-  debug('a request was made');
+  debug(`a request was made to ${req.path}`);
   res.header('Access-Control-Allow-Origin', `http://localhost:${API_PORT}`);
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
