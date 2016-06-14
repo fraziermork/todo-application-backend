@@ -6,7 +6,8 @@
   "scripts": {
     "test": "gulp test",
     "start:db": "mongod -dbpath=./backend/data/db --smallfiles",
-    "start:backend": "nodemon ./backend/server.js"
+    "start:backend": "nodemon ./backend/server.js",
+    "start:frontend": "webpack-dev-server"
   },
   "repository": {
     "type": "git",
