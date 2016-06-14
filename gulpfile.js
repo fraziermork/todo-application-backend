@@ -6,21 +6,18 @@ const mocha   = require('gulp-mocha');
 
 
 const PATHS   = {
-  backend:      [`${__dirname}/backend/**/*.js`], 
-  backendTests: [`${__dirname}/backend/test/*-test.js`]
+  js:    [`${__dirname}/backend/**/*.js`], 
+  tests: [`${__dirname}/backend/test/*-test.js`]
 };
 
 gulp.task('eslint', () => {
-  return gulp.src(PATHS.backend)
+  return gulp.src(PATHS.js)
     .pipe(eslint())
     .pipe(eslint.format());
 });
 
-
-// ///////////////////////////////////////////////
-// BACKEND
 gulp.task('test', () => {
-  return gulp.src(PATHS.backendTests)
+  return gulp.src(PATHS.tests)
     .pipe(mocha());
 });
 

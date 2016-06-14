@@ -2,7 +2,7 @@
   "name": "angular-todo-application-",
   "version": "0.1.0",
   "description": "This is an api server using express and mongodb written as a backend for a todo application.",
-  "main": "index.js",
+  "main": "backend/server.js",
   "scripts": {
     "test": "gulp test",
     "start:db": "mongod -dbpath=./backend/data/db --smallfiles",
