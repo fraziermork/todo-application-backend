@@ -3,6 +3,7 @@
 // HANDLE PORTS AND ENVIRONMENT VARIABLES
 const DB_PORT           = process.env.MONGOLAB_URI || 'mongodb://localhost/db';
 const API_PORT          = process.env.API_PORT || 3000;
+const CLIENT_URL        = process.env.CLIENT_URL || 'http://localhost:8080'
 
 // LOAD NPM MODULES
 const express           = require('express');
@@ -11,6 +12,7 @@ const mongoose          = require('mongoose');
 const Promise           = require('bluebird');
 const morgan            = require('morgan');
 const debug             = require('debug')('SERVER');
+const cors              = require('cors');
 
 // LOAD CUSTOM MIDDLEWARES
 const errMidware        = require(`${__dirname}/lib/error-response-middleware`);
@@ -36,13 +38,8 @@ mongoose.connect(DB_PORT);
 // ATTACH SHARED MIDDLEWARE 
 app.use(morgan('dev'));
 app.use(bodyParser); 
-app.use((req, res, next) => {
-  debug(`a request was made to ${req.path}`);
-  res.header('Access-Control-Allow-Origin', `http://localhost:${API_PORT}`);
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  next();
-});
+// TODO: put in deployment url
+app.use(cors({ origin: CLIENT_URL }));
 
 // UNAUTHENTICATED ROUTES
 app.use('/new-account', newAccountRouter);
