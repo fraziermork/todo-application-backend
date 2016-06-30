@@ -1,7 +1,7 @@
 'use strict';
 
 
-const debug               = require('debug')('listCtrl');
+const debug               = require('debug')('todo:listCtrl');
 const List                = require(`${__dirname}/list-model`);
 const itemCtrl            = require(`${__dirname}/../item/item-controller`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
@@ -25,15 +25,12 @@ function newList(listParams) {
   debug('newList');
   return new Promise((resolve, reject) => {
     List.createAsync(listParams)
-      .catch((err) => {
-        debug('newList catch, mongo error');
-        return reject(new AppError(400, err));
-      })
       .then((list) => {
-        debug('newList then, resolving with saved list');
         return resolve(list);
       })
-      .catch(reject);
+      .catch((err) => {
+        return reject(new AppError(400, err));
+      });
   });
 }
 
@@ -53,7 +50,6 @@ function getAllLists(userId) {
     }
     List.find({ owner: userId })
       .exec((err, lists) => {
-        debug('getAllLists callback');
         if (err) return reject(new AppError(404, err));
         return resolve(lists);
       });
@@ -128,7 +124,6 @@ function deleteList(listId) {
         return itemCtrl.deleteAllItems(listId);
       })
       .then((items) => {
-        debug('all items deleted');
         return resolve();
       })
       .catch((err) => {
@@ -136,8 +131,6 @@ function deleteList(listId) {
       });
   });
 }
-
-
 
 
 /**

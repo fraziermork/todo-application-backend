@@ -1,7 +1,7 @@
 'use strict';
 
 const mongoose    = require('mongoose');
-// const debug       = require('debug')('Item');
+// const debug       = require('debug')('todo:Item');
 
 // TODO: add comments? Due dates? status complete/incomplete? labels/tags? activity log--if moved from one list to another, keeps track of history?
 

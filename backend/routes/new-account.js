@@ -1,6 +1,6 @@
 'use strict';
 
-const debug             = require('debug')('newAccountRouter');
+const debug             = require('debug')('todo:newAccountRouter');
 // const AppError          = require(`${__dirname}/../lib/app-error`);
 // const User              = require(`${__dirname}/../resources/user/user-model`);
 const userCtrl = require(`${__dirname}/../resources/user/user-controller`);

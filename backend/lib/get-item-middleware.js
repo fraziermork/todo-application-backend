@@ -1,6 +1,6 @@
 'use strict';
 
-const debug       = require('debug')('getItemMidware');
+const debug       = require('debug')('todo:getItemMidware');
 const AppError    = require(`${__dirname}/app-error`);
 const itemCtrl    = require(`${__dirname}/../resources/item/item-controller`);
 
@@ -20,8 +20,8 @@ function getItemMidware(req, res, next) {
   itemCtrl.getItem(req.params.itemId)
     .then((item) => {
       if (item.list.toString() !== req.list._id.toString()) {
-        debug('item.list: ', item.list.toString());
-        debug('req.list._id: ', req.list._id.toString());
+        debug('getItemMidware item.list: ', item.list.toString());
+        debug('getItemMidware req.list._id: ', req.list._id.toString());
         throw new AppError(400, 'specified item isnt attached to the specified list');
       }
       req.item = item;

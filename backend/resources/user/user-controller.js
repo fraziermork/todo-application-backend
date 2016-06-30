@@ -1,7 +1,7 @@
 'use strict';
 
 const jwt                 = require('jsonwebtoken');
-const debug               = require('debug')('userCtrl');
+const debug               = require('debug')('todo:userCtrl');
 const User                = require(`${__dirname}/user-model`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 
@@ -35,7 +35,7 @@ function newUser(reqBody) {
     User.create(userInfo, (err, user) => {
       debug('user create callback');
       if (err) {
-        debug('error creating user, rejecting', err);
+        debug('error creating user, rejecting: ', err);
         return reject(new AppError(400, err));
       } 
       debug('user created, resolving');

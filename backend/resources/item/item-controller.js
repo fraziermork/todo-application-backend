@@ -1,7 +1,7 @@
 'use strict';
 
 // const Promise             = require('bluebird');
-const debug               = require('debug')('itemCtrl');
+const debug               = require('debug')('todo:itemCtrl');
 const Item                = require(`${__dirname}/item-model`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 
@@ -25,15 +25,12 @@ function newItem(itemParams) {
   debug('newItem');
   return new Promise((resolve, reject) => {
     Item.createAsync(itemParams)
-      .catch((err) => {
-        debug('newItem catch, mongo error');
-        return reject(new AppError(400, err));
-      })
       .then((item) => {
-        debug('newItem then, resolving w/ saved item');
         return resolve(item);
       })
-      .catch(reject);
+      .catch((err) => {
+        return reject(new AppError(400, err));
+      });
   });
 }
 
@@ -52,7 +49,6 @@ function getAllItems(listId) {
     }
     Item.find({ list: listId })
       .exec((err, items) => {
-        debug('getAllItems callback');
         if (err) return reject(new AppError(404, err));
         return resolve(items);
       });
@@ -149,4 +145,3 @@ function deleteAllItems(listId) {
       });
   });
 }
-// TODO: write a method to delete all items that belong to a list

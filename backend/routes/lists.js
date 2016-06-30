@@ -1,6 +1,6 @@
 'use strict';
 
-const debug           = require('debug')('listsRouter');
+const debug           = require('debug')('todo:listsRouter');
 const getListMidware  = require(`${__dirname}/../lib/get-list-middleware`);
 // const AppError        = require(`${__dirname}/../lib/app-error`);
 const listCtrl        = require(`${__dirname}/../resources/list/list-controller`);
@@ -26,7 +26,6 @@ listsRouter.route('/')
     debug('GET made to /lists');    
     listCtrl.getAllLists(req.user._id.toString())
       .then((lists) => {
-        debug('list GET all then');
         return res.status(200).json(lists);
       })
       .catch(next);
@@ -53,7 +52,6 @@ listsRouter.route('/:listId')
     
     listCtrl.updateList(req.params.listId, req.body)
       .then((list) => {
-        debug('PUT /lists/:listId then, list updated');
         return res.status(200).json(list);
       })
       .catch(next);

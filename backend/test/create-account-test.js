@@ -1,14 +1,12 @@
 'use strict';
 
-// DEBUG=newAccountRouterTest,newAccountRouter,manageServer,SERVER,userCtrl,User,log,AppError,errMidware
-
 // set up env variable to only use a particular test database
 const mongoose      = require('mongoose');
 process.env.MONGOLAB_URI = 'mongodb://localhost/todo_app_test';
 const server        = require(`${__dirname}/../server`);
 const port          = process.env.API_PORT || 3000;
 
-const debug         = require('debug')('newAccountRouterTest'); 
+const debug         = require('debug')('todo:newAccountRouterTest'); 
 const User          = require(`${__dirname}/../resources/user/user-model`);
 const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
 // const request       = require(`${__dirname}/test-lib/request`)(`localhost:${port}`);
@@ -69,6 +67,30 @@ describe('ENDPOINT: /new-account', () => {
   });
   
   describe('testing POST errors', () => {
+    describe('failure on post with invalid email', () => {
+      before('make repeat POST request beforehand', (done) => {
+        this.originalUser = { 
+          username: 'georgeWashington', 
+          password: 'oralHygiene', 
+          email:    'cherrytree@' 
+        };
+        request.post('/new-account')
+          .send(this.originalUser)
+          .end((err, res) => {
+            debug('newAccountRouterTest request callback');
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      
+      it('should have sent a 400 error for a bad email', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(400);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    
     describe('failure on post of existing user', () => {
       before('make repeat POST request beforehand', (done) => {
         this.originalUser = { 
@@ -87,7 +109,7 @@ describe('ENDPOINT: /new-account', () => {
           });
       });
       
-      it('should have sent an error', () => {
+      it('should have sent a 400 error for a post of an existing user', () => {
         expect(this.err).to.not.equal(null);
         expect(this.res.status).to.equal(400);
         expect(this.res.body).to.eql({});
@@ -112,7 +134,7 @@ describe('ENDPOINT: /new-account', () => {
           });
       });
       
-      it('should have sent an error', () => {
+      it('should have sent a 400 error if insufficient info provided', () => {
         expect(this.err).to.not.equal(null);
         expect(this.res.status).to.equal(400);
         expect(this.res.body).to.eql({});
@@ -130,10 +152,10 @@ describe('ENDPOINT: /new-account', () => {
           });
       });
       
-      it('should have sent an error', () => {
+      it('should have sent a 401 error if request uses wrong method', () => {
         expect(this.err).to.not.equal(null);
         
-        // this should probably be changed to 404, but because it's picked up by the '*' after the tokenAuthMidware, it gets a 401 instead
+        // TODO: this should probably be changed to 404, but because it's picked up by the '*' after the tokenAuthMidware, it gets a 401 instead
         expect(this.res.status).to.equal(401);
         expect(this.res.body).to.eql({});
       });

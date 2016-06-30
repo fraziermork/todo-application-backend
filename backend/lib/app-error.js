@@ -1,6 +1,6 @@
 'use strict';
 
-const debug = require('debug')('AppError');
+const debug = require('debug')('todo:AppError');
 
 module.exports = AppError;
 
@@ -28,7 +28,7 @@ function AppError(statusCode, internalMessage) {
   this.publicMessage    = publicErrorMessageKeyByCode[this.statusCode];
   
   if (!statusCode || !internalMessage || !publicErrorMessageKeyByCode[statusCode]) {
-    debug(`AppError called with incorrect arguments, defaulting to status 500. SUPPLIED VALUES: CODE ${statusCode} MESSAGE ${internalMessage}`);
+    debug(`AppError defaulting to status 500. SUPPLIED VALUES: CODE ${statusCode} MESSAGE ${internalMessage}`);
     this.statusCode     = 500;
     this.publicMessage  = publicErrorMessageKeyByCode[this.statusCode];
   }

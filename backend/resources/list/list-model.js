@@ -1,7 +1,7 @@
 'use strict';
 
 const mongoose    = require('mongoose');
-const debug       = require('debug')('List');
+const debug       = require('debug')('todo:List');
 const itemCtrl    = require(`${__dirname}/../item/item-controller`);
 
 // TODO: allow users to share lists/for there to be more than one owner? Permissions for read, write, etc? 
@@ -22,7 +22,7 @@ listSchema.pre('remove', function(next) {
       next();
     })
     .catch((err) => {
-      debug('ERROR removing items belonging to list');
+      debug('ERROR removing items belonging to list ', this._id, err);
       next();
     });
 });
