@@ -1,6 +1,6 @@
 'use strict';
 
-const debug           = require('debug')('itemsRouter');
+const debug           = require('debug')('todo:itemsRouter');
 // const AppError        = require(`${__dirname}/../lib/app-error`);
 const itemCtrl        = require(`${__dirname}/../resources/item/item-controller`);
 const getItemMidware  = require(`${__dirname}/../lib/get-item-middleware`);
@@ -50,7 +50,6 @@ itemsRouter.route('/:itemId')
     
     itemCtrl.updateItem(req.params.itemId, req.body)
       .then((item) => {
-        debug('PUT /lists/:listId/items/:itemId then, list updated');
         return res.status(200).json(item);
       })
       .catch(next);

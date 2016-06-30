@@ -3,7 +3,7 @@
 const mongoose  = require('mongoose');
 const bcrypt    = require('bcrypt');
 const jwt       = require('jsonwebtoken');
-const debug     = require('debug')('User');
+const debug     = require('debug')('todo:User');
 const listCtrl  = require(`${__dirname}/../list/list-controller`);
 
 // TODO: write validator to check if email is a valid email
@@ -30,16 +30,18 @@ userSchema.pre('remove', function(next) {
       next();
     })
     .catch((err) => {
-      debug('ERROR removing lists belonging to user');
+      debug('ERROR removing lists belonging to user ', this._id, err);
       next();
     });
 });
 
 userSchema.methods.comparePassword = function(password) {
+  debug('userSchema comparePassword');
   return bcrypt.compareSync(password, this.password, bcrypt.genSaltSync(10));
 };
 
 userSchema.methods.generateToken = function() {
+  debug('userSchema generateToken');
   return jwt.sign({ _id: this._id }, process.env.JWT_TOKEN_SECRET || '0112358');
 };
 

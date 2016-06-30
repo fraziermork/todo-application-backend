@@ -1,6 +1,6 @@
 'use strict';
 
-const debug       = require('debug')('getListMidware');
+const debug       = require('debug')('todo:getListMidware');
 const AppError    = require(`${__dirname}/app-error`);
 const listCtrl    = require(`${__dirname}/../resources/list/list-controller`);
 

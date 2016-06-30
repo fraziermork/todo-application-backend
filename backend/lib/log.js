@@ -1,7 +1,7 @@
 'use strict';
 
 const chalk = require('chalk');
-const debug = require('debug')('log');
+const debug = require('debug')('todo:log');
 
 // Translation key between log method and chalk color
 const logMethodToColor = {
@@ -17,12 +17,13 @@ const logMethodToColor = {
  *  
  * @param  {string} prefix    the prefix to be used for all logs made with this method 
  * @param  {string} method    a method on the console object
+ * @param  {string} name      the name of the log method
  */ 
-function createLogFunction(prefix, method) {
+function createLogFunction(prefix, method, name) {
   method = method || 'log';
   
   return function() {
-    debug(`${method} log called`);
+    debug(`${name} log method called`);
     // Build a real array from the arguments object
     let args = Array.prototype.slice.call(arguments);
     
@@ -36,9 +37,9 @@ function createLogFunction(prefix, method) {
 
 
 module.exports = {
-  warn:     createLogFunction(logMethodToColor.warn('WARNING: '), 'error'),
-  error:    createLogFunction(logMethodToColor.error('ERROR: '), 'error'),
-  success:  createLogFunction(logMethodToColor.success('SUCCESS: '), 'success'),
+  warn:     createLogFunction(logMethodToColor.warn('WARNING: '), 'error', 'warn'),
+  error:    createLogFunction(logMethodToColor.error('ERROR: '), 'error', 'error'),
+  success:  createLogFunction(logMethodToColor.success('SUCCESS: '), 'log', 'log'),
   data (whatsBeingLogged, itsValue) {
     console.log(logMethodToColor.data(`${whatsBeingLogged}: `), itsValue);
   }

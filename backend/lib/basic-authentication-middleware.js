@@ -1,6 +1,6 @@
 'use strict';
 
-const debug     = require('debug')('basicAuthMidware');
+const debug     = require('debug')('todo:basicAuthMidware');
 const AppError  = require(`${__dirname}/app-error`);
 const userCtrl  = require(`${__dirname}/../resources/user/user-controller`);
 
@@ -25,7 +25,6 @@ function basicAuthMidware(req, res, next) {
     let authBuffer              = new Buffer(b64AuthString, 'base64');
     let [ username, password ]  = authBuffer.toString().split(':');
     authBuffer.fill(0);
-    debug(`username: ${username}`);
     userCtrl.findByUsername(username, password)
       .then((user) => {
         req.user = user;
@@ -33,7 +32,7 @@ function basicAuthMidware(req, res, next) {
       })
       .catch(next);
   } catch (err) {
-    debug('basicAuthMidware catch block');
+    debug('basicAuthMidware catch block', err);
     return next(new AppError(400, 'failed to parse authorization headers as base64'));
   }
 }

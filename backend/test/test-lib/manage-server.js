@@ -1,6 +1,6 @@
 'use strict';
 
-const debug = require('debug')('manageServer');
+const debug = require('debug')('todo:manageServer');
 
 module.exports = returnManageServer;
 

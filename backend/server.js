@@ -12,14 +12,14 @@ const bodyParser        = require('body-parser').json();
 const mongoose          = require('mongoose');
 const Promise           = require('bluebird');
 const morgan            = require('morgan');
-const debug             = require('debug')('SERVER');
+const debug             = require('debug')('todo:server');
 const cors              = require('cors');
 
 // LOAD CUSTOM MIDDLEWARES
 const errMidware        = require(`${__dirname}/lib/error-response-middleware`);
 const basicAuthMidware  = require(`${__dirname}/lib/basic-authentication-middleware`);
-const tokenAuthMidware  = require(`${__dirname}/lib/token-authentication-middleware`); // user is req.user 
-const getListMidware    = require(`${__dirname}/lib/get-list-middleware`); // list w/ listId is req.list
+const tokenAuthMidware  = require(`${__dirname}/lib/token-authentication-middleware`); // attaches authenticated user as req.user 
+const getListMidware    = require(`${__dirname}/lib/get-list-middleware`); // attaches list w/ listId as req.list
 
 // LOAD ROUTERS
 const newAccountRouter  = require(`${__dirname}/routes/new-account`);

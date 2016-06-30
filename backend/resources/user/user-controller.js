@@ -1,7 +1,7 @@
 'use strict';
 
 const jwt                 = require('jsonwebtoken');
-const debug               = require('debug')('userCtrl');
+const debug               = require('debug')('todo:userCtrl');
 const User                = require(`${__dirname}/user-model`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 

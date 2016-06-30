@@ -1,6 +1,6 @@
 'use strict';
 
-const debug     = require('debug')('tokenAuthMidware');
+const debug     = require('debug')('todo:tokenAuthMidware');
 const userCtrl  = require(`${__dirname}/../resources/user/user-controller`);
 const AppError  = require(`${__dirname}/app-error`);
 

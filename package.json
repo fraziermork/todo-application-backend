@@ -1,5 +1,5 @@
 {
-  "name": "angular-todo-application-",
+  "name": "todo-application-backend",
   "version": "0.1.0",
   "description": "This is an api server using express and mongodb written as a backend for a todo application.",
   "main": "backend/server.js",
@@ -7,18 +7,18 @@
     "test": "gulp test",
     "start:db": "mongod -dbpath=./backend/data/db --smallfiles",
     "start:server": "nodemon ./backend/server.js",
-    "start:dev": "ANGULAR_TODO_LOG_ERRORS=true DEBUG=SERVER,itemsRouter,listsRouter,loginRouter,newAccountRouter,userCtrl,listCtrl,itemCtrl,tokenAuthMidware,AppError,errMidware,basicAuthMidware nodemon backend/server.js"
+    "start:dev": "ANGULAR_TODO_LOG_ERRORS=true DEBUG=todo* nodemon backend/server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fraziermork/angular-todo-application-.git"
+    "url": "git+https://github.com/fraziermork/todo-application-backend.git"
   },
   "author": "Frazier Mork <fraziermork@gmail.com> (https://frazier-fibonacci.herokuapp.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/fraziermork/angular-todo-application-/issues"
+    "url": "https://github.com/fraziermork/todo-application-backend/issues"
   },
-  "homepage": "https://github.com/fraziermork/angular-todo-application-#readme",
+  "homepage": "https://github.com/fraziermork/todo-application-backend#readme",
   "dependencies": {
     "bcrypt": "^0.8.6",
     "bluebird": "^3.4.0",

@@ -1,6 +1,6 @@
 'use strict';
 
-const debug       = require('debug')('loginRouter');
+const debug       = require('debug')('todo:loginRouter');
 // const AppError    = require(`${__dirname}/../lib/app-error`);
 
 const loginRouter = require('express').Router();

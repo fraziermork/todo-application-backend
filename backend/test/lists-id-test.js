@@ -1,14 +1,12 @@
 'use strict';
 
-// DEBUG=manageServer,SERVER,listCtrl,User,AppError,errMidware,listsRouterTest,listsRouter,tokenAuthMidware,userCtrl,User,List
-
 // set up env variable to only use a particular test database
 const mongoose      = require('mongoose');
 process.env.MONGOLAB_URI = 'mongodb://localhost/todo_app_test';
 const server        = require(`${__dirname}/../server`);
 const port          = process.env.API_PORT || 3000;
 
-const debug         = require('debug')('listsRouterTest'); 
+const debug         = require('debug')('todo:listsRouterTest'); 
 const List          = require(`${__dirname}/../resources/list/list-model`);
 const User          = require(`${__dirname}/../resources/user/user-model`);
 const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
