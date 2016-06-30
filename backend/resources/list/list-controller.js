@@ -133,8 +133,6 @@ function deleteList(listId) {
 }
 
 
-
-
 /**
  * deleteAllLists - deletes all lists belonging to a user
  *  

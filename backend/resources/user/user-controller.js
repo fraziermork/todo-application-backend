@@ -35,7 +35,7 @@ function newUser(reqBody) {
     User.create(userInfo, (err, user) => {
       debug('user create callback');
       if (err) {
-        debug('error creating user, rejecting', err);
+        debug('error creating user, rejecting: ', err);
         return reject(new AppError(400, err));
       } 
       debug('user created, resolving');
