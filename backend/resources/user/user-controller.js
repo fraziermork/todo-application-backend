@@ -75,19 +75,18 @@ function findByAuthToken(token) {
     let decoded = null;
     try {
       decoded = jwt.verify(token, process.env.JWT_TOKEN_SECRET || '0112358');
-      debug('auth token parsed');
     } catch (err) {
-      debug('failed to parse authorization token');
       return reject(new AppError(401, 'failed to parse authorization token'));
     }
     
     User.findById(decoded._id)
       .exec((err, user) => {
-        if (err || !user) {
-          debug(`failure in find user by id err: ${err}, user: ${user}`);
+        if (err) {
+          return reject(new AppError(400, `Mongoose error finding user with id ${decoded._id}`));
+        }
+        if (!user) {
           return reject(new AppError(401, 'No user exists with that id'));
         }
-        debug('resolving with user');
         return resolve(user);
       });
   });

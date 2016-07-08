@@ -6,7 +6,8 @@ process.env.MONGOLAB_URI = 'mongodb://localhost/todo_app_test';
 const server        = require(`${__dirname}/../server`);
 const port          = process.env.API_PORT || 3000;
 
-// Set up chai 
+// Set up chai and require other npm modules
+const debug         = require('debug')('todo:newAccountRouterTest'); 
 const chai          = require('chai');
 const chaiHttp      = require('chai-http');
 chai.use(chaiHttp);
@@ -14,7 +15,6 @@ const request       = chai.request(`localhost:${port}`);
 const expect        = chai.expect; 
 
 // Require in my modules
-const debug         = require('debug')('todo:newAccountRouterTest'); 
 const User          = require(`${__dirname}/../resources/user/user-model`);
 
 // Require in testing utilites

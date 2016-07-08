@@ -29,15 +29,6 @@ function returnUserCreate(request, User) {
           return done();
         });
     }
-    // , 
-    // createUserBefore(newUserInfoToPost) {
-    //   return new Promise((resolve, reject) => {
-    //     User.create(newUserInfoToPost, )
-    //     
-    //     
-    //     
-    //   });
-    // }
   };
   
   return userCreate;
