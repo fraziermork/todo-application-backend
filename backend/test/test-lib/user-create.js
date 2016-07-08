@@ -24,8 +24,6 @@ function returnUserCreate(request, User) {
       request.post('/new-account')
         .send(userObject)
         .end((err, res) => {
-          debug('userCreate postUserBefore RES: ', res.status, res.body);
-          if (err) debug('ERROR posting user: ', err);
           this.err = err;
           this.res = res;
           return done();
