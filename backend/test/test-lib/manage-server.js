@@ -1,8 +1,7 @@
 'use strict';
 
-const debug = require('debug')('todo:manageServer');
-
-module.exports = returnManageServer;
+const debug     = require('debug')('todo:manageServer');
+module.exports  = returnManageServer;
 
 /**
  * returnManageServer - Module to provide methods for before and after to start and close the server

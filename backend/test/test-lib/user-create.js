@@ -1,8 +1,7 @@
 'use strict';
 
-const debug = require('debug')('todo:userCreate');
-
-module.exports = returnUserCreate;
+const debug     = require('debug')('todo:userCreate');
+module.exports  = returnUserCreate;
 
 /**
  * returnUserCreate - posts and creates users beforehand for tests

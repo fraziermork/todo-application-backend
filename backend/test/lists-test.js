@@ -1,27 +1,27 @@
 'use strict';
 
 // set up env variable to only use a particular test database
-const mongoose      = require('mongoose');
-process.env.MONGOLAB_URI = 'mongodb://localhost/todo_app_test';
-const server        = require(`${__dirname}/../server`);
-const port          = process.env.API_PORT || 3000;
+const mongoose              = require('mongoose');
+process.env.MONGOLAB_URI    = 'mongodb://localhost/todo_app_test';
+const server                = require(`${__dirname}/../server`);
+const port                  = process.env.API_PORT || 3000;
 
 // Set up chai and require other npm modules
-const debug         = require('debug')('todo:listsRouterTest'); 
-const chai          = require('chai');
-const chaiHttp      = require('chai-http');
+const debug                 = require('debug')('todo:listsRouterTest'); 
+const chai                  = require('chai');
+const chaiHttp              = require('chai-http');
 chai.use(chaiHttp);
-const request       = chai.request(`localhost:${port}`);
-const expect        = chai.expect; 
+// const request               = chai.request(`localhost:${port}`);
+const expect                = chai.expect; 
 
 // Require in my modules
-const List          = require(`${__dirname}/../resources/list/list-model`);
-const User          = require(`${__dirname}/../resources/user/user-model`);
+const List                  = require(`${__dirname}/../resources/list/list-model`);
+const User                  = require(`${__dirname}/../resources/user/user-model`);
 
 // Require in testing utilites
-const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
-
-
+const manageServer          = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
+const authenticatedRequest  = require(`${__dirname}/test-lib/authenticated-request`)(chai.request, `localhost:${port}`);
+let request                 = null;
 
 
 let currentUser     = {
@@ -43,6 +43,7 @@ describe('ENDPOINT: /lists', () => {
       }
       currentUser = user;
       authToken   = user.generateToken();
+      request     = authenticatedRequest('/lists', authToken);
       return done();
     });
   });
@@ -60,12 +61,10 @@ describe('ENDPOINT: /lists', () => {
         name:         'Speeches', 
         description:  'Speeches I have given or plan to give.'
       };
-      request.post('/lists')
-        .withCredentials()
-        .set('cookie', `XSRF-TOKEN=${authToken}`)
-        .set('X-XSRF-TOKEN', authToken)
-        .send(this.postedList)
+            
+      request('post', done, { data: this.postedList })
         .end((err, res) => {
+          console.log('callback');
           if (err) debug(`ERROR POSTING LIST: ${err}`);
           this.err = err;
           this.res = res;
@@ -97,10 +96,7 @@ describe('ENDPOINT: /lists', () => {
           name:         'Speeches', 
           description:  'Speeches I have given or plan to give.'
         };
-        request.post('/lists')
-          .withCredentials()
-          .set('X-XSRF-TOKEN', authToken)
-          .send(this.postedList)
+        request('post', done, { data: this.postedList, cookie: false })
           .end((err, res) => {
             this.err = err;
             this.res = res;
@@ -119,10 +115,7 @@ describe('ENDPOINT: /lists', () => {
           name:         'Speeches', 
           description:  'Speeches I have given or plan to give.'
         };
-        request.post('/lists')
-          .withCredentials()
-          .set('cookie', `XSRF-TOKEN=${authToken}`)
-          .send(this.postedList)
+        request('post', done, { data: this.postedList, 'X-XSRF-TOKEN': false })
           .end((err, res) => {
             this.err = err;
             this.res = res;
@@ -135,17 +128,13 @@ describe('ENDPOINT: /lists', () => {
         expect(this.res.body).to.eql({});
       });
     });
-    
+  //   
     describe('it should error without a name included', () => {
       before('make POST request beforehand', (done) => {
         this.postedList = {
           description:  'Speeches I have given or plan to give.'
         };
-        request.post('/lists')
-          .withCredentials()
-          .set('cookie', `XSRF-TOKEN=${authToken}`)
-          .set('X-XSRF-TOKEN', authToken)
-          .send(this.postedList)
+        request('post', done, { data: this.postedList })
           .end((err, res) => {
             if (err) debug(`ERROR POSTING LIST: ${err}`);
             this.err = err;
@@ -176,11 +165,7 @@ describe('ENDPOINT: /lists', () => {
         description:  'Civil war battles that the Union won.', 
         owner:        currentUser._id.toString()
       };
-      request.post('/lists')
-        .withCredentials()
-        .set('cookie', `XSRF-TOKEN=${authToken}`)
-        .set('X-XSRF-TOKEN', authToken)
-        .send(this.testList)
+      request('post', done, { data: this.testList })
         .end((err, res) => {
           if (err) debug(`ERROR POSTING LIST: ${err}`);
           this.testList = res.body;
@@ -188,10 +173,7 @@ describe('ENDPOINT: /lists', () => {
         });
     });
     before('making GET request beforehand', (done) => {
-      request.get('/lists')
-        .withCredentials()
-        .set('cookie', `XSRF-TOKEN=${authToken}`)
-        .set('X-XSRF-TOKEN', authToken)
+      request('get', done)
         .end((err, res) => {
           this.err = err;
           this.res = res;
@@ -215,9 +197,7 @@ describe('ENDPOINT: /lists', () => {
   describe('testing GET all errors', () => {
     describe('it should error out if no XSRF-TOKEN cookie header present', () => {
       before('making GET request beforehand', (done) => {
-        request.get('/lists')
-          .withCredentials()
-          .set('X-XSRF-TOKEN', authToken)
+        request('get', done, { cookie: false })
           .end((err, res) => {
             this.err = err;
             this.res = res;
@@ -232,9 +212,7 @@ describe('ENDPOINT: /lists', () => {
     });
     describe('it should error out if no X-XSRF-TOKEN header present', () => {
       before('making GET request beforehand', (done) => {
-        request.get('/lists')
-          .withCredentials()
-          .set('cookie', `XSRF-TOKEN=${authToken}`)
+        request('get', done, { 'X-XSRF-TOKEN': false })
           .end((err, res) => {
             this.err = err;
             this.res = res;
@@ -248,6 +226,7 @@ describe('ENDPOINT: /lists', () => {
       });
     });
   });
+  
 });
 
 
