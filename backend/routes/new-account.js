@@ -20,13 +20,17 @@ newAccountRouter.post('/', (req, res, next) => {
   debug('POST made to /new-account', req.body);
   userCtrl.newUser(req.body)
     .then((user) => {
-      debug('newAccountRouter POST then');
+      console.log('GOT HERE', user);
       delete user.password;
-      let resBody = {
-        user, 
-        token: user.generateToken()
-      };
-      return res.status(200).json(resBody);
+      let token = user.generateToken();
+      console.log('got here 3');
+      res.status(200)
+        .cookie('XSRF-TOKEN', token)
+        .json(user);
+        
+      console.log('GOT HERE 2');  
+        
+      return;
     })
     .catch(next);
 });

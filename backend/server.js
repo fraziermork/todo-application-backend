@@ -9,6 +9,7 @@ const CLIENT_URL        = process.env.CLIENT_URL || 'http://localhost:8080';
 // LOAD NPM MODULES
 const express           = require('express');
 const bodyParser        = require('body-parser').json();
+const cookieParser      = require('cookie-parser');
 const mongoose          = require('mongoose');
 const Promise           = require('bluebird');
 const morgan            = require('morgan');
@@ -48,6 +49,7 @@ app.use('/login', basicAuthMidware, loginRouter);
 
 // AUTHENTICATED ROUTES 
 app.use(tokenAuthMidware);
+app.use(cookieParser());
 app.use('/lists', listsRouter);
 app.use('/lists/:listId/*', getListMidware);
 app.use('/lists/:listId/items', itemsRouter);
