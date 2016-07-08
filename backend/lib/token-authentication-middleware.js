@@ -19,10 +19,7 @@ module.exports  = tokenAuthMidware;
  * @return {type}      description 
  */ 
 function tokenAuthMidware(req, res, next) {
-  debug('tokenAuthMidware, req.headers: ', req.headers);
-
-  console.log('cookie: ', req.headers.cookie);
-  console.log(req.cookies);
+  debug('tokenAuthMidware');
   if (!req.cookies) return next(new AppError(401, 'No cookie present on request'));
   // TODO: 'XSRF-TOKEN' is the default name for cookies sent with angular, but can be configured to any name
   let reqCookie     = req.cookies['XSRF-TOKEN'];

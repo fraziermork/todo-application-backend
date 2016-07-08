@@ -6,24 +6,30 @@ process.env.MONGOLAB_URI = 'mongodb://localhost/todo_app_test';
 const server        = require(`${__dirname}/../server`);
 const port          = process.env.API_PORT || 3000;
 
+// Set up chai and require other npm modules
 const debug         = require('debug')('todo:listsRouterTest'); 
-const List          = require(`${__dirname}/../resources/list/list-model`);
-const User          = require(`${__dirname}/../resources/user/user-model`);
-const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
-
-// Set up chai 
 const chai          = require('chai');
 const chaiHttp      = require('chai-http');
 chai.use(chaiHttp);
-const request       = chai.request(`localhost:${port}`);
 const expect        = chai.expect; 
 
+// Require in my modules
+const List          = require(`${__dirname}/../resources/list/list-model`);
+const User          = require(`${__dirname}/../resources/user/user-model`);
 
+// Require in testing utilites
+const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
+const authenticatedRequest  = require(`${__dirname}/test-lib/authenticated-request`)(chai.request, `localhost:${port}`);
+
+
+
+// Variables to use in requests 
 let currentUser     = {
   username: 'HonestAbe',
   password: 'FourScoreAndSeven',
   email:    'lincoln@whitehouse.gov'
 };
+let request         = null;
 let authToken       = null;
 
 
@@ -32,7 +38,9 @@ let otherUser       = {
   password: 'FourScoreAndSix',
   email:    'lincoln@lighthouse.gov'
 };
+let otherRequest    = null;
 let otherAuthToken  = null;
+
 
 describe('ENDPOINT: /lists/:id', () => {
   before('open server before block', (done) => {
@@ -46,6 +54,7 @@ describe('ENDPOINT: /lists/:id', () => {
       }
       currentUser = user;
       authToken   = user.generateToken();
+      request     = authenticatedRequest('/lists', authToken);
       return done();
     });
   });
@@ -57,6 +66,7 @@ describe('ENDPOINT: /lists/:id', () => {
       }
       otherUser       = user;
       otherAuthToken  = user.generateToken();
+      otherRequest    = authenticatedRequest('/lists', otherAuthToken);
       return done();
     });
   });
@@ -88,9 +98,7 @@ describe('ENDPOINT: /lists/:id', () => {
         description:  'Civil war battles that the Union lost.', 
         owner:        currentUser._id.toString()
       };
-      request.post('/lists')
-        .set('Authorization', `Token ${authToken}`)
-        .send(testList)
+      request('post', done, { data: testList })
         .end((err, res) => {
           if (err) debug(`ERROR POSTING LIST: ${err}`);
           testList = res.body;
@@ -98,10 +106,9 @@ describe('ENDPOINT: /lists/:id', () => {
         });
     });
     
-    describe('success', () => {
+    describe('testing GET by id success', () => {
       before('make GET request beforehand', (done) => {
-        request.get(`/lists/${testList._id}`)
-          .set('Authorization', `Token ${authToken}`)
+        request('get', done, { id: testList._id.toString() })
           .end((err, res) => {
             this.err = err;
             this.res = res;
@@ -116,11 +123,10 @@ describe('ENDPOINT: /lists/:id', () => {
       });
     });
     
-    describe('error', () => {
+    describe('testing GET by id errors', () => {
       describe('failure when list doesnt exist', () => {
-        before('make GET request beforehand', (done) => {
-          request.get('/lists/12345')
-            .set('Authorization', `Token ${authToken}`)
+        before('make flawed GET request beforehand', (done) => {
+          request('get', done, { id: 'notARealId' })
             .end((err, res) => {
               this.err = err;
               this.res = res;
@@ -134,9 +140,9 @@ describe('ENDPOINT: /lists/:id', () => {
         });
       });
       
-      describe('failure when no auth token present', () => {
-        before('make GET request beforehand', (done) => {
-          request.get(`/lists/${testList._id}`)
+      describe('it should error out without an XSRF-TOKEN cookie header', () => {
+        before('make flawed GET request beforehand', (done) => {
+          request('get', done, { id: testList._id.toString(), cookie: false })
             .end((err, res) => {
               this.err = err;
               this.res = res;
@@ -150,10 +156,57 @@ describe('ENDPOINT: /lists/:id', () => {
         });
       });
       
-      describe('failure when auth token doesnt correspond to list owner', () => {
-        before('make GET request beforehand', (done) => {
-          request.get(`/lists/${testList._id}`)
-            .set('Authorization', `Token ${otherAuthToken}`)
+      describe('it should error out without an X-XSRF-TOKEN header', () => {
+        before('make flawed GET request beforehand', (done) => {
+          request('get', done, { id: testList._id.toString(), 'X-XSRF-TOKEN': false })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
+      
+      describe('it should error out when the XSRF-TOKEN cookie belongs to another user', () => {
+        before('make flawed GET request beforehand', (done) => {
+          request('get', done, { id: testList._id.toString(), cookie: `XSRF-TOKEN=${otherAuthToken}` })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
+      
+      describe('it should error out when the X-XSRF-TOKEN belongs to another user', () => {
+        before('make flawed GET request beforehand', (done) => {
+          request('get', done, { id: testList._id.toString(), 'X-XSRF-TOKEN': otherAuthToken.toString() })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
+      
+      describe('it should error out when both the X-XSRF-TOKEN and XSRF-TOKEN cookie belong to another user', () => {
+        before('make flawed GET request beforehand', (done) => {
+          otherRequest('get', done, { id: testList._id.toString() })
             .end((err, res) => {
               this.err = err;
               this.res = res;
@@ -193,23 +246,19 @@ describe('ENDPOINT: /lists/:id', () => {
         description:  'Legislation ushered through.', 
         owner:        currentUser._id.toString()
       };
-      request.post('/lists')
-        .set('Authorization', `Token ${authToken}`)
-        .send(testList)
+      request('post', done, { data: testList })
         .end((err, res) => {
-          if (err) debug(`ERROR POSTING LIST: ${err}`);
+          if (err) debug('ERROR POSTING LIST: ', err);
           testList = res.body;
           done();
         });
     });
-    describe('success', () => {
+    describe('PUT success', () => {
       before('make PUT request beforehand', (done) => {
         this.changes = {
           description: 'Legislation ushered through, not dudes named William.'
         };
-        request.put(`/lists/${testList._id}`)
-          .send(this.changes)
-          .set('Authorization', `Token ${authToken}`)
+        request('put', done, { id: testList._id.toString(), data: this.changes })
           .end((err, res) => {
             this.err = err;
             this.res = res;
@@ -230,14 +279,14 @@ describe('ENDPOINT: /lists/:id', () => {
         });
       });
     });
-    describe('error', () => {
+    describe('PUT error', () => {
       describe('failure when list doesnt exist', function() {
         // must use function, not arrow function, otherwise this.timeout(milliseconds) doesn't work 
         this.timeout(5000);
-        before('make GET request beforehand', (done) => {
-          request.put('/lists/12345')
-            .set('Authorization', `Token ${authToken}`)
-            .send({ description: 'shouldnt work because no list exists with id 12345' })
+        
+        this.changes = { description: 'shouldnt work because no list exists with id "notARealId"' };
+        before('make flawed PUT request beforehand', (done) => {
+          request('put', done, { id: 'notARealId', data: this.changes })
             .end((err, res) => {
               this.err = err;
               this.res = res;
@@ -250,27 +299,32 @@ describe('ENDPOINT: /lists/:id', () => {
           expect(this.res.body).to.eql({});
         });
       });
-      describe('failure on invalid information', () => {
-        before('make GET request beforehand', (done) => {
-          request.put(`/lists/${testList._id}`)
-            .set('Authorization', `Token ${authToken}`)
-            .send({ owner: 'shouldnt work because cant edit a lists owner' })
+      describe('failure if they try to change the lists owner', () => {
+        before('make flawed PUT request beforehand', (done) => {
+          this.changes = { owner: otherUser._id.toString() };
+          request('put', done, { id: testList._id.toString(), data: this.changes })
             .end((err, res) => {
               this.err = err;
               this.res = res;
               done();
             });
         });
-        it('should return a 404 error', () => {
+        it('should return a 400 error', () => {
           expect(this.err).to.not.equal(null);
           expect(this.res.status).to.equal(400);
           expect(this.res.body).to.eql({});
         });
       });
-      describe('failure without authtoken', () => {
-        before('make GET request beforehand', (done) => {
-          request.put(`/lists/${testList._id}`)
-            .send({ description: 'shouldnt work because can only edits if making authenticated requests' })
+      describe('it should error out without an XSRF-TOKEN cookie header', () => {
+        this.changes = {
+          description: 'No XSRF-TOKEN cookie header.'
+        };
+        before('make flawed PUT request beforehand', (done) => {
+          request('put', done, { 
+            id:     testList._id.toString(), 
+            data:   this.changes, 
+            cookie: false 
+          })
             .end((err, res) => {
               this.err = err;
               this.res = res;
@@ -283,11 +337,84 @@ describe('ENDPOINT: /lists/:id', () => {
           expect(this.res.body).to.eql({});
         });
       });
-      describe('failure with wrong users authtoken', () => {
-        before('make GET request beforehand', (done) => {
-          request.put(`/lists/${testList._id}`)
-            .set('Authorization', `Token ${otherAuthToken}`)
-            .send({ description: 'shouldnt work because can only edit your own lists' })
+      describe('it should error out without an X-XSRF-TOKEN header', () => {
+        this.changes = {
+          description: 'No X-XSRF-TOKEN header.'
+        };
+        before('make flawed PUT request beforehand', (done) => {
+          request('put', done, { 
+            id:             testList._id.toString(), 
+            data:           this.changes, 
+            'X-XSRF-TOKEN': false 
+          })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
+      
+      describe('it should error out when the XSRF-TOKEN cookie belongs to another user', () => {
+        this.changes = {
+          description: 'Someone elses XSRF-TOKEN cookie header.'
+        };
+        before('make flawed PUT request beforehand', (done) => {
+          request('put', done, { 
+            id:     testList._id.toString(), 
+            data:   this.changes, 
+            cookie: `XSRF-TOKEN=${otherAuthToken}` 
+          })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
+      
+      describe('it should error out when the X-XSRF-TOKEN belongs to another user', () => {
+        this.changes = {
+          description: 'Someone elses X-XSRF-TOKEN header.'
+        };
+        before('make flawed PUT request beforehand', (done) => {
+          request('put', done, { 
+            id:             testList._id.toString(), 
+            data:           this.changes, 
+            'X-XSRF-TOKEN': otherAuthToken 
+          })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
+      
+      describe('it should error out when both the X-XSRF-TOKEN and XSRF-TOKEN cookie belong to another user', () => {
+        this.changes = {
+          description: 'Authenticated user does not own specified list .'
+        };
+        before('make flawed PUT request beforehand', (done) => {
+          otherRequest('put', done, { 
+            id:             testList._id.toString(), 
+            data:           this.changes
+          })
             .end((err, res) => {
               this.err = err;
               this.res = res;
@@ -324,19 +451,17 @@ describe('ENDPOINT: /lists/:id', () => {
         description:  'Legislation vetoed.', 
         owner:        currentUser._id.toString()
       };
-      request.post('/lists')
-        .set('Authorization', `Token ${authToken}`)
-        .send(testList)
+      request('post', done, { data: testList })
         .end((err, res) => {
-          if (err) return debug(`ERROR POSTING LIST: ${err}`);
+          if (err) debug('ERROR POSTING LIST: ', err);
           testList = res.body;
           done();
         });
     });
-    describe('success', () => {
+    
+    describe('DELETE success', () => {
       before('make the DELETE request beforehand', (done) => {
-        request.delete(`/lists/${testList._id.toString()}`)
-          .set('Authorization', `Token ${authToken}`)
+        request('delete', done, { id: testList._id.toString() })
           .end((err, res) => {
             if (err) return debug(`ERROR POSTING LIST: ${err}`);
             this.err = err;
@@ -350,11 +475,9 @@ describe('ENDPOINT: /lists/:id', () => {
           description:  'Legislation vetoed.', 
           owner:        currentUser._id.toString()
         };
-        request.post('/lists')
-          .set('Authorization', `Token ${authToken}`)
-          .send(testList)
+        request('post', done, { data: testList })
           .end((err, res) => {
-            if (err) return debug(`ERROR POSTING LIST: ${err}`);
+            if (err) debug('ERROR POSTING LIST: ', err);
             testList = res.body;
             done();
           });
@@ -371,61 +494,102 @@ describe('ENDPOINT: /lists/:id', () => {
           done();
         });
       });
-      // after database flattening, the user no longer tracks the lists that belong to them
-      // it('should have removed a reference to the list from the user', (done) => {
-      //   User.findById(currentUser._id.toString(), (err, user) => {
-      //     expect(err).to.equal(null);
-      //     
-      //     // confirm that this would work 
-      //     expect(user.lists.indexOf(testList._id)).to.equal(-1);
-      //     done();
-      //   });
-      // });
     });
-    describe('errors', function() {
+  
+    describe('DELETE errors', function() {
       this.timeout(5000);
-      describe('failure without auth token', () => {
-        before('make the flawed DELETE request beforehand', (done) => {
-          request.delete(`/lists/${testList._id.toString()}`)
+      describe('it should error out without an XSRF-TOKEN cookie header', () => {
+        before('make the DELETE request beforehand', (done) => {
+          request('put', done, { 
+            id:     testList._id.toString(), 
+            cookie: false 
+          })
             .end((err, res) => {
-              if (err) debug(`ERROR POSTING LIST: ${err}`);
               this.err = err;
               this.res = res;
               done();
             });
         });
-        it('should return 401 error', () => {
-          debug(this.err);
+        it('should return a 401 error', () => {
           expect(this.err).to.not.equal(null);
           expect(this.res.status).to.equal(401);
           expect(this.res.body).to.eql({});
         });
+        
       });
-      
-      describe('failure with another users auth token', () => {
-        before('make the flawed DELETE request beforehand', (done) => {
-          request.delete(`/lists/${testList._id.toString()}`)
-            .set('Authorization', `Token ${otherAuthToken}`)
+      describe('it should error out without an X-XSRF-TOKEN header', () => {
+        before('make the DELETE request beforehand', (done) => {
+          request('delete', done, { 
+            id:             testList._id.toString(), 
+            'X-XSRF-TOKEN': false 
+          })
             .end((err, res) => {
-              if (err) debug(`ERROR POSTING LIST: ${err}`);
               this.err = err;
               this.res = res;
               done();
             });
         });
-        it('should return 401 error', () => {
+        it('should return a 401 error', () => {
           expect(this.err).to.not.equal(null);
           expect(this.res.status).to.equal(401);
           expect(this.res.body).to.eql({});
         });
       });
-      
+      describe('it should error out when the XSRF-TOKEN cookie belongs to another user', () => {
+        before('make the DELETE request beforehand', (done) => {
+          request('put', done, { 
+            id:     testList._id.toString(), 
+            cookie: `XSRF-TOKEN=${otherAuthToken}` 
+          })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
+      describe('it should error out when the X-XSRF-TOKEN belongs to another user', () => {
+        before('make the DELETE request beforehand', (done) => {
+          request('delete', done, { 
+            id:             testList._id.toString(), 
+            'X-XSRF-TOKEN': otherAuthToken 
+          })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
+      describe('it should error out when both the X-XSRF-TOKEN and XSRF-TOKEN cookie belong to another user', () => {
+        before('make the DELETE request beforehand', (done) => {
+          otherRequest('delete', done, { id: testList._id.toString() })
+            .end((err, res) => {
+              this.err = err;
+              this.res = res;
+              done();
+            });
+        });
+        it('should return a 401 error', () => {
+          expect(this.err).to.not.equal(null);
+          expect(this.res.status).to.equal(401);
+          expect(this.res.body).to.eql({});
+        });
+      });
       describe('failure if list doesnt exist ', () => {
         before('make the flawed DELETE request beforehand', (done) => {
-          request.delete('/lists/12345')
-            .set('Authorization', `Token ${authToken}`)
+          request('delete', done, { id: 'notARealId' })
             .end((err, res) => {
-              if (err) debug(`ERROR POSTING LIST: ${err}`);
               this.err = err;
               this.res = res;
               done();

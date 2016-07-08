@@ -9,13 +9,12 @@ module.exports  = authenticatedRequestTakesRequest;
  * authenticatedRequestTakesRequest - a helper module to make authenticated http requests 
  *  
  * @param  {function} request the chai-http request method
- * @param  {string}   baseurl the root url to make requests to 
+ * @param  {string}   baseUrl the root url to make requests to 
  * @return {function}         a curried function that accepts the endpoint 
  */ 
-function authenticatedRequestTakesRequest(requestFunction, baseurl) {
+function authenticatedRequestTakesRequest(requestFunction, baseUrl) {
   debug('authenticatedRequestTakesRequest');
-  let request = requestFunction(baseurl);
-  
+  const request = requestFunction(baseUrl);
   
   /**  
    * authenticatedRequestTakesEndpoint - description  
@@ -25,25 +24,28 @@ function authenticatedRequestTakesRequest(requestFunction, baseurl) {
    */   
   return function authenticatedRequestTakesEndpoint(endpoint, jwtCookieValue) {
     debug('authenticatedRequestTakesEndpoint');
-    // default params for requests
-    // key is the header name or just a description if oneArg is true
-    // value is what to send 
+    // translates between keys on default objects and info needed to call methods on superagent request
     // method is the method on the superagent request object
+    // twoArgs is whether it should be called as method(key, options[key]) or just method(options[key])
     const defaultKeyToReqMethod = {
-      cookie:         {
-        method:   'set',
-        twoArgs: true
-      }, 
       data:           {
         method:   'send', 
-        twoArgs: false 
+        twoArgs:  false 
+      }, 
+      cookie:         {
+        method:   'set',
+        twoArgs:  true
       }, 
       'X-XSRF-TOKEN': {
         method:   'set',
-        twoArgs: true
+        twoArgs:  true
       }
     };
+    
+    // defines the default values for superagent requests 
+    // see authenticatedRequest below for key meanings
     const defaults  = {
+      id:             null, 
       data:           null,
       cookie:         `XSRF-TOKEN=${jwtCookieValue}`,
       'X-XSRF-TOKEN': jwtCookieValue
@@ -59,16 +61,25 @@ function authenticatedRequestTakesRequest(requestFunction, baseurl) {
      * @property  {boolean}   [cookie=true]         whether to set the cookie header XSRF-TOKEN=jwtCookieValue
      * @property  {boolean}   [X-XSRF-TOKEN=true]   whether to set the header X-XSRF-TOKEN to jwtCookieValue
      * @property  {object}    [data=null]           request body
-     * @return    {object}                          a superagent request       
+     * @property  {string}    [id=null]             id to tack onto the endpoint to make requests for a resource by id
+     * @return    {object}                          a superagent request object     
      */     
     return function authenticatedRequest(method, done, options = {}) {
-      debug(`authenticatedRequest method: ${method}, endpoint: ${endpoint}`);
       _.defaults(options, defaults);
-      let currentRequest = request[method.toLowerCase()](endpoint).withCredentials();
-      debug('Request options: ', options);
+      
+      // dont want to mutate endpoint for subsequent requests
+      let urlToHit  = endpoint;
+      if (options.id) urlToHit += `/${options.id}`;
+      debug(`authenticatedRequest method: ${method}, endpoint: ${urlToHit}`);
+      
+      // set up the request to hit the endpoint 
+      let currentRequest = request[method.toLowerCase()](urlToHit).withCredentials();
+      debug('authenticatedRequest options: ', options);
+      
+      // If the option is true, call the appropriate method on the request with the corresponding arguments
       keys.forEach((key) => {
         let currentOption = options[key];
-        if (currentOption) {
+        if (currentOption && key !== 'id') {
           let argumentsForCurrentOption = [currentOption];
           if (defaultKeyToReqMethod[key].twoArgs) {
             argumentsForCurrentOption.unshift(key);
@@ -77,7 +88,7 @@ function authenticatedRequestTakesRequest(requestFunction, baseurl) {
           currentRequest[superagentMethodForOption](...argumentsForCurrentOption);
         }
       });
-      console.log(currentRequest);
+      
       return currentRequest;
     };
   };

@@ -21,7 +21,7 @@ const User          = require(`${__dirname}/../resources/user/user-model`);
 // Require in testing utilites
 const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
 
-
+// Variables to use in requests 
 let originalUser  = { 
   username: 'EffDeeArr', 
   password: 'LetsMakeANewDeal', 

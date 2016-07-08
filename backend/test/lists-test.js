@@ -11,7 +11,6 @@ const debug                 = require('debug')('todo:listsRouterTest');
 const chai                  = require('chai');
 const chaiHttp              = require('chai-http');
 chai.use(chaiHttp);
-// const request               = chai.request(`localhost:${port}`);
 const expect                = chai.expect; 
 
 // Require in my modules
@@ -21,14 +20,14 @@ const User                  = require(`${__dirname}/../resources/user/user-model
 // Require in testing utilites
 const manageServer          = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
 const authenticatedRequest  = require(`${__dirname}/test-lib/authenticated-request`)(chai.request, `localhost:${port}`);
-let request                 = null;
 
-
+// Variables to use in requests 
 let currentUser     = {
   username: 'HonestAbe',
   password: 'FourScoreAndSeven',
   email:    'lincoln@whitehouse.gov'
 };
+let request         = null;
 let authToken       = null;
 
 describe('ENDPOINT: /lists', () => {
@@ -64,7 +63,6 @@ describe('ENDPOINT: /lists', () => {
             
       request('post', done, { data: this.postedList })
         .end((err, res) => {
-          console.log('callback');
           if (err) debug(`ERROR POSTING LIST: ${err}`);
           this.err = err;
           this.res = res;
