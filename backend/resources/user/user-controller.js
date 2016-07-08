@@ -17,13 +17,11 @@ userCtrl.findByAuthToken  = findByAuthToken;
  * @return {promise}        a promise that resolves with the user or rejects with an appError 
  */ 
 function newUser(reqBody) {
-  debug('newUser called');
+  debug('newUser');
   return new Promise((resolve, reject) => {
     if (!reqBody.username || !reqBody.password || !reqBody.email) {
-      debug('incorrect credentions provided, rejecting');
       return reject(new AppError(400, `Either username (${reqBody.username}) or password (${reqBody.password}) or email (${reqBody.email}) not provided.`));
     }
-    
     // Ensure that only the desired info gets through 
     let userInfo = { 
       username: reqBody.username,
@@ -33,12 +31,9 @@ function newUser(reqBody) {
     
     // TODO: check the error type to determine if it failed validation (400) or if it was a duplicate (409)
     User.create(userInfo, (err, user) => {
-      debug('user create callback');
       if (err) {
-        debug('error creating user, rejecting: ', err);
         return reject(new AppError(400, err));
       } 
-      debug('user created, resolving');
       return resolve(user);
     });
   });
@@ -58,9 +53,7 @@ function findByUsername(username, password) {
   return new Promise((resolve, reject) => {
     User.findOne({ username })
     .exec((err, user) => {
-      debug('User findOne callback');
       if (err || !user || !user.comparePassword(password)) {
-        debug('incorrect password');
         return reject(new AppError(401, err || 'incorrect username or password'));
       }
       return resolve(user);

@@ -1,7 +1,7 @@
 'use strict';
 
 const debug       = require('debug')('todo:loginRouter');
-// const AppError    = require(`${__dirname}/../lib/app-error`);
+const AppError    = require(`${__dirname}/../lib/app-error`);
 
 const loginRouter = require('express').Router();
 module.exports    = loginRouter;
@@ -19,4 +19,8 @@ loginRouter.get('/', (req, res, next) => {
     .status(200)
     .cookie('XSRF-TOKEN', token)
     .json(req.user);
+});
+
+loginRouter.all('*', (req, res, next) => {
+  return next(new AppError(404, 'request to /login with wrong http verb'));
 });

@@ -11,7 +11,8 @@ module.exports  = tokenAuthMidware;
 
 /**
  * tokenAuthMidware - purpose is to take an incoming authenticated request, decode the token, and either attach the user as req.user or call the error response midware with a 401 error
- *  
+ *                    TODO: this is picking up requests made to /new-account or to /login that are made w/ the wrong method 
+ * 
  * @param  {type} req  description 
  * @param  {type} res  description 
  * @param  {type} next description 
@@ -19,7 +20,8 @@ module.exports  = tokenAuthMidware;
  */ 
 function tokenAuthMidware(req, res, next) {
   debug('tokenAuthMidware, req.headers: ', req.headers);
-  
+
+  if (!req.cookies) return next(new AppError(401, 'No cookie present on request'));
   // TODO: 'XSRF-TOKEN' is the default name for cookies sent with angular, but can be configured to any name
   let reqCookie     = req.cookies['XSRF-TOKEN'];
   // TODO: 'X-XSRF-TOKEN' is how angular attaches the token to the headers, but any name can be used
@@ -38,4 +40,5 @@ function tokenAuthMidware(req, res, next) {
       return next();
     })
     .catch(next);
+  
 }
