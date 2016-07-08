@@ -48,8 +48,8 @@ app.use('/new-account', newAccountRouter);
 app.use('/login', basicAuthMidware, loginRouter);
 
 // AUTHENTICATED ROUTES 
-app.use(tokenAuthMidware);
 app.use(cookieParser());
+app.use(tokenAuthMidware);
 app.use('/lists', listsRouter);
 app.use('/lists/:listId/*', getListMidware);
 app.use('/lists/:listId/items', itemsRouter);
