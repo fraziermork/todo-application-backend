@@ -6,19 +6,23 @@ process.env.MONGOLAB_URI = 'mongodb://localhost/todo_app_test';
 const server        = require(`${__dirname}/../server`);
 const port          = process.env.API_PORT || 3000;
 
-const btoa          = require('btoa');
+// Set up chai and require other npm modules
 const debug         = require('debug')('todo:loginRouterTest'); 
-const User          = require(`${__dirname}/../resources/user/user-model`);
-const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
-
-// Set up chai 
+const btoa          = require('btoa');
 const chai          = require('chai');
 const chaiHttp      = require('chai-http');
 chai.use(chaiHttp);
 const request       = chai.request(`localhost:${port}`);
 const expect        = chai.expect; 
 
-const originalUser  = { 
+// Require in my modules
+const User          = require(`${__dirname}/../resources/user/user-model`);
+
+// Require in testing utilites
+const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
+
+// Variables to use in requests 
+let originalUser  = { 
   username: 'EffDeeArr', 
   password: 'LetsMakeANewDeal', 
   email:    'fdr@whitehouse.gov'
@@ -53,8 +57,12 @@ describe('ENDPOINT: /login', () => {
     });
     it('should return the user and an authorization token', () => {
       expect(this.err).to.equal(null);
-      expect(this.res.body.user.username).to.equal(originalUser.username);
-      expect(this.res.body).to.have.property('token');
+      expect(this.res.status).to.equal(200);
+      expect(this.res.body.username).to.equal(this.savedUser.username);
+      expect(this.res.body.email).to.equal(this.savedUser.email);
+      expect(this.res.body).to.have.property('creationDate');
+      expect(this.res.body._id.toString()).to.equal(this.savedUser._id.toString());
+      expect(this.res.headers).to.have.property('set-cookie');
     });
   });
   

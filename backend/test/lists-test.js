@@ -1,29 +1,33 @@
 'use strict';
 
 // set up env variable to only use a particular test database
-const mongoose      = require('mongoose');
-process.env.MONGOLAB_URI = 'mongodb://localhost/todo_app_test';
-const server        = require(`${__dirname}/../server`);
-const port          = process.env.API_PORT || 3000;
+const mongoose              = require('mongoose');
+process.env.MONGOLAB_URI    = 'mongodb://localhost/todo_app_test';
+const server                = require(`${__dirname}/../server`);
+const port                  = process.env.API_PORT || 3000;
 
-const debug         = require('debug')('todo:listsRouterTest'); 
-const List          = require(`${__dirname}/../resources/list/list-model`);
-const User          = require(`${__dirname}/../resources/user/user-model`);
-const manageServer  = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
-
-// Set up chai 
-const chai          = require('chai');
-const chaiHttp      = require('chai-http');
+// Set up chai and require other npm modules
+const debug                 = require('debug')('todo:listsRouterTest'); 
+const chai                  = require('chai');
+const chaiHttp              = require('chai-http');
 chai.use(chaiHttp);
-const request       = chai.request(`localhost:${port}`);
-const expect        = chai.expect; 
+const expect                = chai.expect; 
 
+// Require in my modules
+const List                  = require(`${__dirname}/../resources/list/list-model`);
+const User                  = require(`${__dirname}/../resources/user/user-model`);
 
+// Require in testing utilites
+const manageServer          = require(`${__dirname}/test-lib/manage-server`)(mongoose, server, port);
+const authenticatedRequest  = require(`${__dirname}/test-lib/authenticated-request`)(chai.request, `localhost:${port}`);
+
+// Variables to use in requests 
 let currentUser     = {
   username: 'HonestAbe',
   password: 'FourScoreAndSeven',
   email:    'lincoln@whitehouse.gov'
 };
+let request         = null;
 let authToken       = null;
 
 describe('ENDPOINT: /lists', () => {
@@ -38,6 +42,7 @@ describe('ENDPOINT: /lists', () => {
       }
       currentUser = user;
       authToken   = user.generateToken();
+      request     = authenticatedRequest('/lists', authToken);
       return done();
     });
   });
@@ -55,9 +60,8 @@ describe('ENDPOINT: /lists', () => {
         name:         'Speeches', 
         description:  'Speeches I have given or plan to give.'
       };
-      request.post('/lists')
-        .set('Authorization', `Token ${authToken}`)
-        .send(this.postedList)
+            
+      request('post', done, { data: this.postedList })
         .end((err, res) => {
           if (err) debug(`ERROR POSTING LIST: ${err}`);
           this.err = err;
@@ -72,6 +76,7 @@ describe('ENDPOINT: /lists', () => {
       expect(this.res.body.description).to.equal(this.postedList.description);
       expect(this.res.body.owner).to.equal(currentUser._id.toString());
       expect(this.res.body).to.have.property('creationDate');
+      expect(this.res.body).to.have.property('_id');
     });
     it('should have saved the list to the database', (done) => {
       List.findById(this.res.body._id, (err, list) => {
@@ -83,14 +88,13 @@ describe('ENDPOINT: /lists', () => {
   });
   
   describe('testing POST errors', () => {
-    describe('it should error out without an auth token', () => {
+    describe('it should error out without an XSRF-TOKEN cookie header', () => {
       before('making POST request without auth token', (done) => {
         this.postedList = {
           name:         'Speeches', 
           description:  'Speeches I have given or plan to give.'
         };
-        request.post('/lists')
-          .send(this.postedList)
+        request('post', done, { data: this.postedList, cookie: false })
           .end((err, res) => {
             this.err = err;
             this.res = res;
@@ -103,14 +107,32 @@ describe('ENDPOINT: /lists', () => {
         expect(this.res.body).to.eql({});
       });
     });
+    describe('it should error out without an X-XSRF-TOKEN header', () => {
+      before('making POST request without auth token', (done) => {
+        this.postedList = {
+          name:         'Speeches', 
+          description:  'Speeches I have given or plan to give.'
+        };
+        request('post', done, { data: this.postedList, 'X-XSRF-TOKEN': false })
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 401 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(401);
+        expect(this.res.body).to.eql({});
+      });
+    });
+  //   
     describe('it should error without a name included', () => {
       before('make POST request beforehand', (done) => {
         this.postedList = {
           description:  'Speeches I have given or plan to give.'
         };
-        request.post('/lists')
-          .set('Authorization', `Token ${authToken}`)
-          .send(this.postedList)
+        request('post', done, { data: this.postedList })
           .end((err, res) => {
             if (err) debug(`ERROR POSTING LIST: ${err}`);
             this.err = err;
@@ -141,9 +163,7 @@ describe('ENDPOINT: /lists', () => {
         description:  'Civil war battles that the Union won.', 
         owner:        currentUser._id.toString()
       };
-      request.post('/lists')
-        .set('Authorization', `Token ${authToken}`)
-        .send(this.testList)
+      request('post', done, { data: this.testList })
         .end((err, res) => {
           if (err) debug(`ERROR POSTING LIST: ${err}`);
           this.testList = res.body;
@@ -151,8 +171,7 @@ describe('ENDPOINT: /lists', () => {
         });
     });
     before('making GET request beforehand', (done) => {
-      request.get('/lists')
-        .set('Authorization', `Token ${authToken}`)
+      request('get', done)
         .end((err, res) => {
           this.err = err;
           this.res = res;
@@ -174,9 +193,24 @@ describe('ENDPOINT: /lists', () => {
   });
   
   describe('testing GET all errors', () => {
-    describe('it should error out if no auth token provided', () => {
+    describe('it should error out if no XSRF-TOKEN cookie header present', () => {
       before('making GET request beforehand', (done) => {
-        request.get('/lists')
+        request('get', done, { cookie: false })
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 401 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(401);
+        expect(this.res.body).to.eql({});
+      });
+    });
+    describe('it should error out if no X-XSRF-TOKEN header present', () => {
+      before('making GET request beforehand', (done) => {
+        request('get', done, { 'X-XSRF-TOKEN': false })
           .end((err, res) => {
             this.err = err;
             this.res = res;
@@ -190,6 +224,7 @@ describe('ENDPOINT: /lists', () => {
       });
     });
   });
+  
 });
 
 

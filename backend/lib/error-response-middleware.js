@@ -10,7 +10,7 @@ function errMidware(err, req, res, next) {
   debug('errMidware');
   if (AppError.isAppError(err)) {
     log.error(err.internalMessage);
-    debug(`err was a valid AppError, status: ${err.statusCode} message: ${err.publicMessage}`);
+    debug(`err was a valid AppError, status: ${err.statusCode} message: ${err.internalMessage}`);
     return res.status(err.statusCode).send(err.publicMessage);
   } 
   log.error(err.message);
