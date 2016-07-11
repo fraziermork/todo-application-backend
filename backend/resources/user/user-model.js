@@ -17,10 +17,22 @@ const userSchema = new mongoose.Schema({
       /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 
       'User email field failed regex match'
     ] 
-  },
-  creationDate: { type: Date, default: Date.now }
+  }
+}, {
+  timestamps: { createdAt: 'creationDate' }, 
+  toObject:   { 
+    getters:  true, 
+    minimize: false
+  }
 });
 
+
+// Automatically adds an empty array to the user representation as the lists property so that it doesn't mess with ng repeats
+userSchema.virtual('lists').get(() => {
+  return [];
+});
+
+// TODO: fix this to use a setter
 userSchema.pre('save', function preUserSaveHook(next) {
   debug('pre user save');
   bcrypt.hash(this.password, 10, (err, hashedPassword) => {

@@ -120,6 +120,7 @@ describe('ENDPOINT: /lists/:id', () => {
         expect(this.res.status).to.equal(200);
         expect(this.res.body.name).to.equal(testList.name);
         expect(this.res.body).to.have.property('creationDate');
+        expect(this.res.body.items).to.be.instanceof(Array);
       });
     });
     
