@@ -46,7 +46,7 @@ function newUser(reqBody) {
  *  
  * @param  {string} username description 
  * @param  {string} password description 
- * @return {promise}          a promise that resolves with mongo document of the user or rejects with an appError 
+ * @return {promise}         a promise that resolves with mongo document of the user or rejects with an appError 
  */ 
 function findByUsername(username, password) {
   debug('findByUsername');

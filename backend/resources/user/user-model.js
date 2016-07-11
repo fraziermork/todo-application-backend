@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   creationDate: { type: Date, default: Date.now }
 });
 
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function preUserSaveHook(next) {
   debug('pre user save');
   bcrypt.hash(this.password, 10, (err, hashedPassword) => {
     this.password = hashedPassword;
@@ -29,7 +29,7 @@ userSchema.pre('save', function(next) {
   });
 });
 
-userSchema.pre('remove', function(next) {
+userSchema.pre('remove', function preUserRemoveHook(next) {
   debug('User pre remove');
   listCtrl.deleteAllLists(this._id)
     .then((items) => {
@@ -42,12 +42,12 @@ userSchema.pre('remove', function(next) {
     });
 });
 
-userSchema.methods.comparePassword = function(password) {
+userSchema.methods.comparePassword = function comparePassword(password) {
   debug('userSchema comparePassword');
   return bcrypt.compareSync(password, this.password, bcrypt.genSaltSync(10));
 };
 
-userSchema.methods.generateToken = function() {
+userSchema.methods.generateToken = function generateToken() {
   debug('userSchema generateToken');
   return jwt.sign({ _id: this._id }, process.env.JWT_TOKEN_SECRET || '0112358');
 };
