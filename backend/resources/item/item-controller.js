@@ -1,12 +1,12 @@
 'use strict';
 
-// const Promise             = require('bluebird');
 const debug               = require('debug')('todo:itemCtrl');
 const Item                = require(`${__dirname}/item-model`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
-const listCtrl            = requre(`${__dirname}/../list/list-controller`);
+const listCtrl            = require(`${__dirname}/../list/list-controller`);
 
 const itemCtrl            = module.exports = {};
+
 
 itemCtrl.newItem          = newItem;
 itemCtrl.getAllItems      = getAllItems;
@@ -20,14 +20,20 @@ itemCtrl.deleteAllItems   = deleteAllItems;
  * newItem - creates a new item
  *  
  * @param  {object}   itemParams  an object with properties for all the fields of the item to be created 
+ * @param  {object}   list        the list the new item belongs to  
  * @return {promise}              a promise that resolves with a newly saved item or rejects with an appError 
  */ 
-function newItem(itemParams) {
+function newItem(itemParams, list) {
   debug('newItem');
+  let newItem = null;
   return new Promise((resolve, reject) => {
     Item.createAsync(itemParams)
       .then((item) => {
-        return resolve(item);
+        newItem = item;
+        return listCtrl.handleListItems(item, list._id);
+      })
+      .then((updatedList) => {
+        return resolve(newItem);
       })
       .catch((err) => {
         return reject(new AppError(400, err));

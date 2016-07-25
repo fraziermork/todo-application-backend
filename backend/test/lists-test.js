@@ -74,14 +74,22 @@ describe('ENDPOINT: /lists', () => {
       expect(this.res.status).to.equal(200);
       expect(this.res.body.name).to.equal(this.postedList.name);
       expect(this.res.body.description).to.equal(this.postedList.description);
-      expect(this.res.body.owner).to.equal(currentUser._id.toString());
       expect(this.res.body).to.have.property('creationDate');
       expect(this.res.body).to.have.property('_id');
+      expect(this.res.body).to.not.have.property('owner');
     });
     it('should have saved the list to the database', (done) => {
       List.findById(this.res.body._id, (err, list) => {
         expect(err).to.equal(null);
         expect(list.name).to.equal(this.postedList.name);
+        done();
+      });
+    });
+    it('should have saved a reference to the list to the user', (done) => {
+      User.findById(currentUser._id, (err, user) => {
+        expect(err).to.equal(null);
+        expect(user.lists.length).to.not.equal(0);
+        expect(user.lists.indexOf(this.res.body._id)).to.not.equal(-1);
         done();
       });
     });

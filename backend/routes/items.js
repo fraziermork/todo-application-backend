@@ -14,7 +14,7 @@ itemsRouter.route('/')
     debug('POST to /lists/:listId/items');
     let itemParams  = req.body;
     itemParams.list = req.list._id.toString();
-    itemCtrl.newItem(itemParams)
+    itemCtrl.newItem(itemParams, req.list)
       .then((item) => {
         return res.status(200).json(item);
       })

@@ -3,7 +3,8 @@
 
 const debug               = require('debug')('todo:listCtrl');
 const List                = require(`${__dirname}/list-model`);
-const itemCtrl            = require(`${__dirname}/../item/item-controller`);
+const userCtrl            = require(`${__dirname}/../user/user-controller`);
+// const itemCtrl            = require(`${__dirname}/../item/item-controller`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 
 
@@ -20,14 +21,21 @@ listCtrl.handleListItems  = handleListItems;
  * newList - creates a new list 
  *  
  * @param  {object} listParams    an object with properties for the new list
+ * @param  {object} user          the authenticated user's mongo document
  * @return {promise}              a promise that resolves with the new list or rejects with an appError 
  */ 
-function newList(listParams) {
-  debug('newList', listParams);
+function newList(listParams, user) {
+  debug('newList');
+  debug('userCtrl: ', userCtrl);
+  let newList = null;
   return new Promise((resolve, reject) => {
     List.createAsync(listParams)
       .then((list) => {
-        return resolve(list);
+        newList = list;
+        return userCtrl.manageUserLists(list, user);
+      })
+      .then((user) => {
+        return resolve(newList);
       })
       .catch((err) => {
         return reject(new AppError(400, err));
@@ -71,7 +79,8 @@ function getList(listId) {
   debug('getList');
   return new Promise((resolve, reject) => {
     if (!listId) return reject(new AppError(400, 'no listId provided'));
-    List.findById(listId)      
+    List.findById(listId)
+      .populate()
       .exec((err, list) => {
         if (err || !list) {
           return reject(new AppError(404, err || 'no list found'));
@@ -158,7 +167,7 @@ function deleteAllLists(userId) {
 
 
 /**
- * handleListItems - adds an items 
+ * handleListItems - adds or removes references to an item from a list
  *  
  * @param     {object}    item        the item that is being put into the list or removed from it 
  * @param     {object}    listId      the mongo _id of the list to modify the items of 
@@ -166,7 +175,7 @@ function deleteAllLists(userId) {
  * @property  {boolean}   removeFlag  whether to remove the item from the list with the 
  * @return    {promise}               description 
  */ 
-function handleListItems(item, listId, options) {
+function handleListItems(item, listId, options = {}) {
   debug('handleListItems');
   let listOperator = '$push';
   if (options.removeFlag) {

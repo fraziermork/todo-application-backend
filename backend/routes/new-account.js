@@ -22,7 +22,6 @@ newAccountRouter.post('/', (req, res, next) => {
   userCtrl.newUser(req.body)
     .then((user) => {
       let token  = user.generateToken();
-      user       = user.toObject();
       return res.status(200)
         .cookie('XSRF-TOKEN', token)
         .json(user);
