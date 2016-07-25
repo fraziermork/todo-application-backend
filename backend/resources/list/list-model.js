@@ -9,7 +9,8 @@ const itemCtrl    = require(`${__dirname}/../item/item-controller`);
 const listSchema  = new mongoose.Schema({
   name:           { type: String, required: true },
   description:    String,
-  owner:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  owner:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
+  items:          [{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }]
 }, {
   timestamps: { createdAt: 'creationDate' }, 
   toObject:   { 

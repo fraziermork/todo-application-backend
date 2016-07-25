@@ -4,6 +4,7 @@
 const debug               = require('debug')('todo:itemCtrl');
 const Item                = require(`${__dirname}/item-model`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
+const listCtrl            = requre(`${__dirname}/../list/list-controller`);
 
 const itemCtrl            = module.exports = {};
 

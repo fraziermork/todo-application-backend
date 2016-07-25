@@ -14,6 +14,7 @@ listCtrl.getList          = getList;
 listCtrl.updateList       = updateList;
 listCtrl.deleteList       = deleteList;
 listCtrl.deleteAllLists   = deleteAllLists;
+listCtrl.handleListItems  = handleListItems;
 
 /**
  * newList - creates a new list 
@@ -151,4 +152,40 @@ function deleteAllLists(userId) {
         return resolve(lists);
       });
   });
+}
+
+
+
+
+/**
+ * handleListItems - adds an items 
+ *  
+ * @param     {object}    item        the item that is being put into the list or removed from it 
+ * @param     {object}    listId      the mongo _id of the list to modify the items of 
+ * @param     {object}    options     an object specifying the options for the list items operations 
+ * @property  {boolean}   removeFlag  whether to remove the item from the list with the 
+ * @return    {promise}               description 
+ */ 
+function handleListItems(item, listId, options) {
+  debug('handleListItems');
+  let listOperator = '$push';
+  if (options.removeFlag) {
+    debug('handleListItems removeFlag true');
+    listOperator = '$pull';
+  }
+  let updatesToList = {};
+  updatesToList[listOperator] = { items: item._id };
+  
+  return new Promise((resolve, reject) => {
+    List.findOneAndUpdate(
+      { _id: listId }, 
+      updatesToList, 
+      { runValidators: true, new: true }, 
+      (err, updatedList) => {
+        if (err || !updatedList) {
+          return reject(new AppError(400, err || 'no list existed, shouldnt have happened'));
+        }
+        return resolve(updatedList);
+      });
+  });  
 }
