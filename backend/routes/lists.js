@@ -54,7 +54,7 @@ listsRouter.route('/:listId')
   // DELETE route for deleting a single list owned by the authenticated user
   .delete((req, res, next) => {
     debug('DELETE made to /lists/:listId');
-    listCtrl.deleteList(req.params.listId)
+    listCtrl.deleteList(req.list, req.user)
       .then(() => {
         return res.status(204).end();
       })

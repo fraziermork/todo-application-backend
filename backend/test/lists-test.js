@@ -134,7 +134,7 @@ describe('ENDPOINT: /lists', () => {
         expect(this.res.body).to.eql({});
       });
     });
-  //   
+   
     describe('it should error without a name included', () => {
       before('make POST request beforehand', (done) => {
         this.postedList = {

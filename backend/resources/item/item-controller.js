@@ -9,7 +9,6 @@ const itemCtrl            = module.exports = {};
 
 
 itemCtrl.newItem          = newItem;
-itemCtrl.getAllItems      = getAllItems;
 itemCtrl.getItem          = getItem;
 itemCtrl.updateItem       = updateItem;
 itemCtrl.deleteItem       = deleteItem;
@@ -37,27 +36,6 @@ function newItem(itemParams, list) {
       })
       .catch((err) => {
         return reject(new AppError(400, err));
-      });
-  });
-}
-
-
-/**
- * getAllItems - finds all items that belong to a list with the given _id
- *  
- * @param  {string}   listId  the _id of the list whose items we want to find 
- * @return {promise}          a promise that resolves with all the items for that list or rejects with an appError 
- */ 
-function getAllItems(listId) {
-  debug('getAllItems');
-  return new Promise((resolve, reject) => {
-    if (!listId) {
-      return reject(new AppError(404, 'no listId provided'));
-    }
-    Item.find({ list: listId })
-      .exec((err, items) => {
-        if (err) return reject(new AppError(404, err));
-        return resolve(items);
       });
   });
 }

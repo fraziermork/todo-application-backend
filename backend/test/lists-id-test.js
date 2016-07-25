@@ -482,8 +482,9 @@ describe('ENDPOINT: /lists/:id', () => {
       it('should have removed the reference to the list from the user', (done) => {
         User.findById(currentUser._id, (err, user) => {
           expect(err).to.equal(null);
-          let lists = user.toObject().lists;
-          expect(lists.indexOf(testList._id.toString())).to.equal(-1);
+          expect(user.lists.some((listId) => {
+            return listId.toString() === testList._id.toString();
+          })).to.equal(false);
           done();
         });
       });

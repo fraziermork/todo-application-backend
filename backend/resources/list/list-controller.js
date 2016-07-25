@@ -10,7 +10,6 @@ const AppError            = require(`${__dirname}/../../lib/app-error`);
 
 const listCtrl            = module.exports = {};
 listCtrl.newList          = newList;
-listCtrl.getAllLists      = getAllLists;
 listCtrl.getList          = getList;
 listCtrl.updateList       = updateList;
 listCtrl.deleteList       = deleteList;
@@ -42,28 +41,6 @@ function newList(listParams, user) {
   });
 }
 
-
-
-/**
- * getAllLists - returns all lists that belong to a user 
- *             - TODO: Deprecated? 
- *  
- * @param  {string}  userId the _id of the user whose lists you want to find
- * @return {promise}        a promise that resolves with an array of all lists belonging to that user or rejects with an appError 
- */ 
-function getAllLists(userId) {
-  debug('getAllLists');
-  return new Promise((resolve, reject) => {
-    if (!userId) {
-      return reject(new AppError(404, 'no user id provided'));
-    }
-    List.find({ owner: userId })
-      .exec((err, lists) => {
-        if (err) return reject(new AppError(404, err));
-        return resolve(lists);
-      });
-  });
-}
 
 
 
@@ -122,16 +99,19 @@ function updateList(listId, listParams) {
 /**
  * deleteList - deletes a list from the database, removes references to it from its owner, and deletes all its items
  *  
- * @param  {string} listId  the _id of the list to delete  
+ * @param  {object} list  the list to delete 
+ * @param  {object} user  the user the list belongs to
  * @return {promise}        a promise that rejects with an appError or resolves with nothing 
  */ 
-function deleteList(listId) {
+function deleteList(list, user) {
   debug('deleteList');
+  
+  
   // TODO: need to delete all items in the list 
   return new Promise((resolve, reject) => {
-    List.findOneAndRemoveAsync({ _id: listId })
-      .then((list) => {
-        // return itemCtrl.deleteAllItems(listId);
+    List.findOneAndRemoveAsync({ _id: list._id })
+      .then((deletedList) => {
+        return userCtrl.manageUserLists(list, user, { removeFlag: true });
       })
       .then((items) => {
         return resolve();
