@@ -17,7 +17,7 @@ listsRouter.route('/')
     listParams.owner  = req.user._id;
     listCtrl.newList(listParams)
       .then((list) => {
-        return res.status(200).json(list);
+        return res.status(200).json(list.toObject());
       })
       .catch(next);
   })

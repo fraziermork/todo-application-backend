@@ -22,18 +22,18 @@ function tokenAuthMidware(req, res, next) {
   debug('tokenAuthMidware');
   if (!req.cookies) return next(new AppError(401, 'No cookie present on request'));
   // TODO: 'XSRF-TOKEN' is the default name for cookies sent with angular, but can be configured to any name
-  let reqCookie     = req.cookies['XSRF-TOKEN'];
+  let cookieJWT = req.cookies['XSRF-TOKEN'];
   // TODO: 'X-XSRF-TOKEN' is how angular attaches the token to the headers, but any name can be used
-  let headerCookie  = req.headers['x-xsrf-token'];
-  debug('REQUEST COOKIE XSRF-TOKEN: ', reqCookie);
-  debug('HEADER COOKIE X-XSRF-TOKEN: ', headerCookie);
+  let headerJWT = req.headers['x-xsrf-token'];
+  debug('REQUEST COOKIE XSRF-TOKEN: ', cookieJWT);
+  debug('HEADER X-XSRF-TOKEN: ', headerJWT);
   
-  if (!reqCookie || !headerCookie || reqCookie !== headerCookie) {
-    debug(`REJECTING with 401 from tokenAuthMidware, reqCookie: ${!!reqCookie}, headerCookie: ${!!headerCookie}, match: ${reqCookie === headerCookie}`);
+  if (!cookieJWT || !headerJWT || cookieJWT !== headerJWT) {
+    debug(`REJECTING with 401 from tokenAuthMidware, cookieJWT: ${!!cookieJWT}, headerCookie: ${!!headerJWT}, match: ${cookieJWT === headerJWT}`);
     return next(new AppError(401, 'Authorization cookies missing or didnt match'));
   }
 
-  userCtrl.findByAuthToken(headerCookie)
+  userCtrl.findByAuthToken(headerJWT)
     .then((user) => {
       req.user = user;
       return next();

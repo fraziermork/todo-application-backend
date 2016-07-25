@@ -22,7 +22,7 @@ listCtrl.deleteAllLists   = deleteAllLists;
  * @return {promise}              a promise that resolves with the new list or rejects with an appError 
  */ 
 function newList(listParams) {
-  debug('newList');
+  debug('newList', listParams);
   return new Promise((resolve, reject) => {
     List.createAsync(listParams)
       .then((list) => {

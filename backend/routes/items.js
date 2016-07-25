@@ -25,10 +25,10 @@ itemsRouter.route('/')
   .get((req, res, next) => {
     debug('GET to /lists/:listId/items');
     itemCtrl.getAllItems(req.list._id.toString())
-    .then((items) => {
-      return res.status(200).json(items);
-    })
-    .catch(next);
+      .then((items) => {
+        return res.status(200).json(items);
+      })
+      .catch(next);
   });
 
 itemsRouter.use('/:itemId', getItemMidware);

@@ -41,7 +41,16 @@ mongoose.connect(DB_PORT);
 app.use(morgan('dev'));
 app.use(bodyParser); 
 // TODO: put in deployment url
-app.use(cors({ origin: CLIENT_URL }));
+app.use(cors({ 
+  origin:      CLIENT_URL,
+  credentials: true,
+  allowedHeaders: [
+    'X-XSRF-TOKEN', 
+    'authorization',
+    'content-type',
+    'accept'
+  ]
+}));
 
 // UNAUTHENTICATED ROUTES
 app.use('/new-account', newAccountRouter);
