@@ -1,2 +1,3 @@
 node_modules
 backend/data/db
+npm-debug.log
