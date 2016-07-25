@@ -115,13 +115,17 @@ function updateItem(itemId, itemParams) {
 /**
  * deleteItem - deletes a item from the database, removes references to it from its list
  *  
- * @param  {string} itemId  the _id of the item to delete  
+ * @param  {object} item  the _id of the item to delete  
+ * @param  {object} list  the list that the item to delete belongs to
  * @return {promise}        a promise that rejects with an appError or resolves with nothing 
  */ 
-function deleteItem(itemId) {
+function deleteItem(item, list) {
   debug('deleteItem');
   return new Promise((resolve, reject) => {
-    Item.findOneAndRemoveAsync({ _id: itemId })
+    Item.findOneAndRemoveAsync({ _id: item._id })
+      .then(() => {
+        return listCtrl.handleListItems(item, list, { removeFlag: true });
+      })
       .then(() => {
         return resolve();
       })

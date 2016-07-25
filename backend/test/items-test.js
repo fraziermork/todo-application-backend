@@ -90,142 +90,143 @@ describe('ENDPOINT: /lists/:listId/items', () => {
       expect(this.res.body.name).to.equal(this.postedItem.name);
       expect(this.res.body.content).to.equal(this.postedItem.content);
       expect(this.res.body).to.have.property('creationDate');
-      expect(this.res.body.list).to.equal(currentList._id);
     });
     it('should have saved the item to the database', (done) => {
-      Item.findById(currentList._id, (err, item) => {
+      Item.findById(this.res.body._id, (err, item) => {
         expect(err).to.equal(null);
+        debug('item is: ', item);
         expect(item.name).to.equal(this.postedItem.name);
         done();
       });
     });
     it('should have saved a reference to the  item to its list', (done) => {
-      List.findById(this.res.body._id, (err, list) => {
+      List.findById(currentList._id, (err, list) => {
         debug('SAVED LIST:', list);
         expect(err).to.equal(null);
-        expect(list.items.indexOf(this.postedItem._id)).to.not.equal(-1);
+        let items = list.toObject().items;
+        expect(items.some((itemId) => {
+          return itemId.toString() === this.res.body._id;
+        })).to.equal(true);
         done();
       });
     });
   });
-  // describe('testing POST errors', () => {
-  //   // Leaving out auth based tests on items routes for now -- because lookup handled w/ get list beforehand, lists tests should be sufficient to prove these routes work the same way 
-  //   // describe('it should error out without an auth token', () => {
-  //   //   before('making POST request without auth token', (done) => {
-  //   //     this.postedItem = {
-  //   //       name:         'Prince Nebulon', 
-  //   //       content:      'Hah.'
-  //   //     };
-  //   //     request.post(`/lists/${currentList._id}/items`)
-  //   //       .send(this.postedItem)
-  //   //       .end((err, res) => {
-  //   //         this.err = err;
-  //   //         this.res = res;
-  //   //         done();
-  //   //       });
-  //   //   });
-  //   //   it('should return a 401 error', () => {
-  //   //     expect(this.err).to.not.equal(null);
-  //   //     expect(this.res.status).to.equal(401);
-  //   //     expect(this.res.body).to.eql({});
-  //   //   });
-  //   // });
-  //   describe('it should error without a name included', () => {
-  //     before('making POST request without auth token', (done) => {
-  //       this.postedItem  = {
-  //         content:     'Hah.'
-  //       };
-  //       request('post', done, { id: `${currentList._id}/items`, data: this.postedItem })
-  //         .end((err, res) => {
-  //           this.err = err;
-  //           this.res = res;
-  //           done();
-  //         });
-  //     });
-  //     it('should return a 400 error', () => {
-  //       expect(this.err).to.not.equal(null);
-  //       expect(this.res.status).to.equal(400);
-  //       expect(this.res.body).to.eql({});
-  //     });
-  //   });
-  // });
+  describe('testing POST errors', () => {
+    // Leaving out auth based tests on items routes for now -- because lookup handled w/ get list beforehand, lists tests should be sufficient to prove these routes work the same way 
+    // describe('it should error out without an auth token', () => {
+    //   before('making POST request without auth token', (done) => {
+    //     this.postedItem = {
+    //       name:         'Prince Nebulon', 
+    //       content:      'Hah.'
+    //     };
+    //     request.post(`/lists/${currentList._id}/items`)
+    //       .send(this.postedItem)
+    //       .end((err, res) => {
+    //         this.err = err;
+    //         this.res = res;
+    //         done();
+    //       });
+    //   });
+    //   it('should return a 401 error', () => {
+    //     expect(this.err).to.not.equal(null);
+    //     expect(this.res.status).to.equal(401);
+    //     expect(this.res.body).to.eql({});
+    //   });
+    // });
+    describe('it should error without a name included', () => {
+      before('making POST request without auth token', (done) => {
+        this.postedItem  = {
+          content:     'Hah.'
+        };
+        request('post', done, { id: `${currentList._id}/items`, data: this.postedItem })
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 400 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(400);
+        expect(this.res.body).to.eql({});
+      });
+    });
+  });
   
   // ////////////////////////////////////////
   // GET /lists
   // ////////////////////////////////////////
-  // describe('testing GET all item success', () => {
-  //   before('making item POST request beforehand', (done) => {
-  //     this.postedItem = {
-  //       name:         'Prince Nebulon',
-  //       content:      'Hah.'
-  //     };
-  //     request('post', done, { id: `${currentList._id}/items`, data: this.postedItem })
-  //       .end((err, res) => {
-  //         if (err) debug('ERROR POSTING ITEM BEFORE GET:', err);
-  //         this.postedItem = res;
-  //         done();
-  //       });
-  //   });
-  //   before('making GET request beforehand', (done) => {
-  //     request('get', done, { id: `${currentList._id}/items` })
-  //       .end((err, res) => {
-  //         this.err = err;
-  //         this.res = res;
-  //         done();
-  //       });
-  //   });
-  //   it('should have returned an item', () => {
-  //     expect(this.err).to.equal(null);
-  //     expect(this.res.status).to.equal(200);
-  //     expect(this.res.body.name).to.equal(this.postedItem.name);
-  //     expect(this.res.body.content).to.equal(this.postedItem.content);
-  //     expect(this.res.body._id).to.equal(this.postedItem._id);
-  //   });
-  // });
-  // describe('testing GET all item errors', () => {
-  //   let postedItem = null;
-  //   before('making item POST request beforehand', (done) => {
-  //     postedItem = {
-  //       name:         'Beta 7',
-  //       content:      'Unity picks losers...wait'
-  //     };
-  //     request('post', done, { id: `${currentList._id}/items`, data: postedItem })
-  //       .end((err, res) => {
-  //         if (err) debug('ERROR POSTING ITEM BEFORE GET:', err);
-  //         postedItem = res;
-  //         done();
-  //       });
-  //   });
-  //   // Leaving out auth based tests on items routes for now -- because lookup handled w/ get list beforehand, lists tests should be sufficient to prove these routes work the same way
-  //   // describe('it should error without an auth token', () => {
-  //   //   before('making GET request beforehand', (done) => {
-  //   //     request.get(`/lists/${currentList._id}/items`)
-  //   //       .end((err, res) => {
-  //   //         this.err = err;
-  //   //         this.res = res;
-  //   //         done();
-  //   //       });
-  //   //   });
-  //   //   it('should return a 401 error', () => {
-  //   //     expect(this.err).to.not.equal(null);
-  //   //     expect(this.res.status).to.equal(401);
-  //   //     expect(this.res.body).to.eql({});
-  //   //   });
-  //   // });
-  //   describe('it should error if no such list exists', () => {
-  //     before('making GET request beforehand', (done) => {
-  //       request('get', done, { id: 'notARealId/items' })
-  //         .end((err, res) => {
-  //           this.err = err;
-  //           this.res = res;
-  //           done();
-  //         });
-  //     });
-  //     it('should return a 404 error', () => {
-  //       expect(this.err).to.not.equal(null);
-  //       expect(this.res.status).to.equal(404);
-  //       expect(this.res.body).to.eql({});
-  //     });
-  //   });
-  // });
+  describe('testing GET all item success', () => {
+    before('making item POST request beforehand', (done) => {
+      this.postedItem = {
+        name:         'Prince Nebulon',
+        content:      'Hah.'
+      };
+      request('post', done, { id: `${currentList._id}/items`, data: this.postedItem })
+        .end((err, res) => {
+          if (err) debug('ERROR POSTING ITEM BEFORE GET:', err);
+          this.postedItem = res;
+          done();
+        });
+    });
+    before('making GET request beforehand', (done) => {
+      request('get', done, { id: `${currentList._id}/items` })
+        .end((err, res) => {
+          this.err = err;
+          this.res = res;
+          done();
+        });
+    });
+    it('should have returned an item', () => {
+      expect(this.err).to.equal(null);
+      expect(this.res.status).to.equal(200);
+      expect(this.res.body).to.not.be.empty;
+    });
+  });
+  describe('testing GET all item errors', () => {
+    let postedItem = null;
+    before('making item POST request beforehand', (done) => {
+      postedItem = {
+        name:         'Beta 7',
+        content:      'Unity picks losers...wait'
+      };
+      request('post', done, { id: `${currentList._id}/items`, data: postedItem })
+        .end((err, res) => {
+          if (err) debug('ERROR POSTING ITEM BEFORE GET:', err);
+          postedItem = res;
+          done();
+        });
+    });
+    // Leaving out auth based tests on items routes for now -- because lookup handled w/ get list beforehand, lists tests should be sufficient to prove these routes work the same way
+    // describe('it should error without an auth token', () => {
+    //   before('making GET request beforehand', (done) => {
+    //     request.get(`/lists/${currentList._id}/items`)
+    //       .end((err, res) => {
+    //         this.err = err;
+    //         this.res = res;
+    //         done();
+    //       });
+    //   });
+    //   it('should return a 401 error', () => {
+    //     expect(this.err).to.not.equal(null);
+    //     expect(this.res.status).to.equal(401);
+    //     expect(this.res.body).to.eql({});
+    //   });
+    // });
+    describe('it should error if no such list exists', () => {
+      before('making GET request beforehand', (done) => {
+        request('get', done, { id: 'notARealId/items' })
+          .end((err, res) => {
+            this.err = err;
+            this.res = res;
+            done();
+          });
+      });
+      it('should return a 404 error', () => {
+        expect(this.err).to.not.equal(null);
+        expect(this.res.status).to.equal(404);
+        expect(this.res.body).to.eql({});
+      });
+    });
+  });
 });

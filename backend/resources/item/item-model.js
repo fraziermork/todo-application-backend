@@ -7,8 +7,9 @@ const mongoose    = require('mongoose');
 
 const itemSchema  = new mongoose.Schema({
   name:           { type: String, required: true },
-  content:        String,
-  list:           { type: mongoose.Schema.Types.ObjectId, ref: 'List', required: true }
+  content:        String
+  // list:           { type: mongoose.Schema.Types.ObjectId, ref: 'List', required: true }
+  
 }, {
   timestamps: { createdAt: 'creationDate' }, 
   toObject:   { 

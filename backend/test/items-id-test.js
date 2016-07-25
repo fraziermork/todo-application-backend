@@ -125,6 +125,7 @@ describe('ENDPOINT: /lists/:listId/items/:itemId', () => {
       expect(this.res.body.name).to.equal(testItem.name);
       expect(this.res.body.content).to.equal(testItem.content);
       expect(this.res.body._id).to.equal(testItem._id);
+      expect(this.res.body).to.not.have.property('list');
     });
     
   });
@@ -399,7 +400,15 @@ describe('ENDPOINT: /lists/:listId/items/:itemId', () => {
       expect(this.err).to.equal(null);
       expect(this.res.status).to.equal(204);
     });
-    
+    it('should have deleted the reference to the item from the list', (done) => {
+      List.findById(currentList._id, (err, list) => {
+        expect(err).to.equal(null);
+        expect(list.items.some((itemId) => {
+          return itemId.toString() === testItem._id.toString();
+        })).to.equal(false);
+        done();
+      });
+    });
   });
   
   describe('testing DELETE item by id errors', () => {

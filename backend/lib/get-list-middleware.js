@@ -19,19 +19,12 @@ function getListMidware(req, res, next) {
   debug('getListMidware');
   listCtrl.getList(req.params.listId)
     .then((list) => {
-      let listInUserListsFlag = false;
-      
-      req.user.lists.forEach((userList) => {
-        debug('userList is: ', userList);
-        debug(`userList._id: ${userList._id}, list._id: ${list._id}, equality: ${userList._id.toString() === list._id.toString()}`);
-        if (userList._id.toString() === list._id.toString()) {
-          listInUserListsFlag = true;
-          debug('list found in users lists');
-        } 
+      let listInUserListsFlag = req.user.lists.some((userList) => {
+        return userList._id.toString() === list._id.toString();
       });
-      
+    
       if (!listInUserListsFlag) {
-        debug(`getListMidware listId: ${list._id}, req.user.lists:`, req.user.lists);
+        debug(`getListMidware LIST NOT FOUND ON USER: listId: ${list._id}, req.user.lists:`, req.user.lists);
         throw new AppError(401, 'user tried to access a list that doesnt belong to them');
       }
       req.list = list;
