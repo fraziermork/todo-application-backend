@@ -7,9 +7,14 @@ const mongoose    = require('mongoose');
 
 const itemSchema  = new mongoose.Schema({
   name:           { type: String, required: true },
-  creationDate:   { type: Date, default: Date.now },
   content:        String,
   list:           { type: mongoose.Schema.Types.ObjectId, ref: 'List', required: true }
+}, {
+  timestamps: { createdAt: 'creationDate' }, 
+  toObject:   { 
+    getters:  true, 
+    minimize: false
+  }
 });
 
 module.exports    = mongoose.model('Item', itemSchema);

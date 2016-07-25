@@ -27,6 +27,8 @@ let originalUser  = {
   password: 'LetsMakeANewDeal', 
   email:    'fdr@whitehouse.gov'
 };
+let savedUser     = null;
+
 
 describe('ENDPOINT: /login', () => {
   before('open server before block', (done) => {
@@ -36,7 +38,7 @@ describe('ENDPOINT: /login', () => {
   before('save a user to the database', (done) => {
     User.create(originalUser, (err, user) => {
       if (err) debug('ERROR: ', err);
-      this.savedUser = user;
+      savedUser = user;
       done();
     });
   });
@@ -58,10 +60,11 @@ describe('ENDPOINT: /login', () => {
     it('should return the user and an authorization token', () => {
       expect(this.err).to.equal(null);
       expect(this.res.status).to.equal(200);
-      expect(this.res.body.username).to.equal(this.savedUser.username);
-      expect(this.res.body.email).to.equal(this.savedUser.email);
+      expect(this.res.body.username).to.equal(savedUser.username);
+      expect(this.res.body.email).to.equal(savedUser.email);
       expect(this.res.body).to.have.property('creationDate');
-      expect(this.res.body._id.toString()).to.equal(this.savedUser._id.toString());
+      expect(this.res.body._id.toString()).to.equal(savedUser._id.toString());
+      expect(this.res.body.lists).to.be.instanceof(Array);
       expect(this.res.headers).to.have.property('set-cookie');
     });
   });
@@ -101,7 +104,7 @@ describe('ENDPOINT: /login', () => {
     });
     describe('error on invalid headers', () => {
       before('make GET request for user', (done) => {
-        let b64String = btoa('incorrect');
+        let b64String = btoa('incorrect:junk');
         request.get('/login')
           .set('Authorization', `Basic ${b64String}`)
           .end((err, res) => {

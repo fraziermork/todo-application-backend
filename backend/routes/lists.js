@@ -4,6 +4,7 @@ const debug           = require('debug')('todo:listsRouter');
 const getListMidware  = require(`${__dirname}/../lib/get-list-middleware`);
 // const AppError        = require(`${__dirname}/../lib/app-error`);
 const listCtrl        = require(`${__dirname}/../resources/list/list-controller`);
+const itemCtrl        = require(`${__dirname}/../resources/item/item-controller`);
 
 const listsRouter     = require('express').Router();
 module.exports        = listsRouter;
@@ -38,7 +39,13 @@ listsRouter.route('/:listId')
   // GET route for retrieving a single list owned by the authenticated user
   .get((req, res, next) => {
     debug('GET made to /lists/:listId');
-    return res.status(200).json(req.list);
+    itemCtrl.getAllItems(req.list._id.toString())
+      .then((items) => {
+        let list   = req.list.toObject();
+        list.items = items;
+        return res.status(200).json(list);
+      })
+      .catch(next);
   })
   
   // PUT route for updating a single list owned by the authenticated user

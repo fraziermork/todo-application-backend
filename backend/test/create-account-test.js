@@ -50,6 +50,7 @@ describe('ENDPOINT: /new-account', () => {
       expect(this.res.body.username).to.equal(this.originalUser.username);
       expect(this.res.body.email).to.equal(this.originalUser.email);
       expect(this.res.body).to.have.property('creationDate');
+      expect(this.res.body.lists).to.be.instanceof(Array);
       expect(this.res.headers).to.have.property('set-cookie');
     });
     

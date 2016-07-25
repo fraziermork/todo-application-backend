@@ -5,9 +5,10 @@ const AppError          = require(`${__dirname}/../lib/app-error`);
 // const User              = require(`${__dirname}/../resources/user/user-model`);
 const userCtrl = require(`${__dirname}/../resources/user/user-controller`);
 
+
+
 const newAccountRouter  = require('express').Router();
 module.exports          = newAccountRouter;
-
 
 
 
@@ -20,8 +21,8 @@ newAccountRouter.post('/', (req, res, next) => {
   debug('POST made to /new-account', req.body);
   userCtrl.newUser(req.body)
     .then((user) => {
-      delete user.password;
-      let token = user.generateToken();
+      let token  = user.generateToken();
+      user       = user.toObject();
       return res.status(200)
         .cookie('XSRF-TOKEN', token)
         .json(user);

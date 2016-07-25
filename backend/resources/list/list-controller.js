@@ -70,7 +70,7 @@ function getList(listId) {
   debug('getList');
   return new Promise((resolve, reject) => {
     if (!listId) return reject(new AppError(400, 'no listId provided'));
-    List.findById(listId)
+    List.findById(listId)      
       .exec((err, list) => {
         if (err || !list) {
           return reject(new AppError(404, err || 'no list found'));
