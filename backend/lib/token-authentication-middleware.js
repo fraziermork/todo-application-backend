@@ -25,8 +25,6 @@ function tokenAuthMidware(req, res, next) {
   let cookieJWT = req.cookies['XSRF-TOKEN'];
   // TODO: 'X-XSRF-TOKEN' is how angular attaches the token to the headers, but any name can be used
   let headerJWT = req.headers['x-xsrf-token'];
-  debug('REQUEST COOKIE XSRF-TOKEN: ', cookieJWT);
-  debug('HEADER X-XSRF-TOKEN: ', headerJWT);
   
   if (!cookieJWT || !headerJWT || cookieJWT !== headerJWT) {
     debug(`REJECTING with 401 from tokenAuthMidware, cookieJWT: ${!!cookieJWT}, headerCookie: ${!!headerJWT}, match: ${cookieJWT === headerJWT}`);

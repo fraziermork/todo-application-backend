@@ -26,7 +26,6 @@ listCtrl.handleListItems  = handleListItems;
  */ 
 function newList(listParams, user) {
   debug('newList');
-  debug('userCtrl: ', userCtrl);
   let newList = null;
   return new Promise((resolve, reject) => {
     List.createAsync(listParams)
@@ -47,6 +46,7 @@ function newList(listParams, user) {
 
 /**
  * getAllLists - returns all lists that belong to a user 
+ *             - TODO: Deprecated? 
  *  
  * @param  {string}  userId the _id of the user whose lists you want to find
  * @return {promise}        a promise that resolves with an array of all lists belonging to that user or rejects with an appError 
@@ -80,7 +80,7 @@ function getList(listId) {
   return new Promise((resolve, reject) => {
     if (!listId) return reject(new AppError(400, 'no listId provided'));
     List.findById(listId)
-      .populate()
+      .populate('items')
       .exec((err, list) => {
         if (err || !list) {
           return reject(new AppError(404, err || 'no list found'));
@@ -131,7 +131,7 @@ function deleteList(listId) {
   return new Promise((resolve, reject) => {
     List.findOneAndRemoveAsync({ _id: listId })
       .then((list) => {
-        return itemCtrl.deleteAllItems(listId);
+        // return itemCtrl.deleteAllItems(listId);
       })
       .then((items) => {
         return resolve();

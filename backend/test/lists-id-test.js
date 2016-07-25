@@ -95,8 +95,7 @@ describe('ENDPOINT: /lists/:id', () => {
     before('posting list beforehand', (done) => {
       testList = {
         name:         'Confederate victories', 
-        description:  'Civil war battles that the Union lost.', 
-        owner:        currentUser._id.toString()
+        description:  'Civil war battles that the Union lost.'
       };
       request('post', done, { data: testList })
         .end((err, res) => {
@@ -116,9 +115,11 @@ describe('ENDPOINT: /lists/:id', () => {
           });
       });
       it('should return the list', () => {
+        debug(this.res.body);
         expect(this.err).to.equal(null);
         expect(this.res.status).to.equal(200);
         expect(this.res.body.name).to.equal(testList.name);
+        expect(this.res.body.description).to.equal(testList.description);
         expect(this.res.body).to.have.property('creationDate');
         expect(this.res.body.items).to.be.instanceof(Array);
       });
@@ -300,22 +301,6 @@ describe('ENDPOINT: /lists/:id', () => {
           expect(this.res.body).to.eql({});
         });
       });
-      describe('failure if they try to change the lists owner', () => {
-        before('make flawed PUT request beforehand', (done) => {
-          this.changes = { owner: otherUser._id.toString() };
-          request('put', done, { id: testList._id.toString(), data: this.changes })
-            .end((err, res) => {
-              this.err = err;
-              this.res = res;
-              done();
-            });
-        });
-        it('should return a 400 error', () => {
-          expect(this.err).to.not.equal(null);
-          expect(this.res.status).to.equal(400);
-          expect(this.res.body).to.eql({});
-        });
-      });
       describe('it should error out without an XSRF-TOKEN cookie header', () => {
         this.changes = {
           description: 'No XSRF-TOKEN cookie header.'
@@ -449,8 +434,7 @@ describe('ENDPOINT: /lists/:id', () => {
     before('post a list before each delete test', (done) => {
       testList = {
         name:         'Bills rejected', 
-        description:  'Legislation vetoed.', 
-        owner:        currentUser._id.toString()
+        description:  'Legislation vetoed.' 
       };
       request('post', done, { data: testList })
         .end((err, res) => {
@@ -473,8 +457,8 @@ describe('ENDPOINT: /lists/:id', () => {
       after('post a list after a sucessful deletion', (done) => {
         testList = {
           name:         'Bills rejected', 
-          description:  'Legislation vetoed.', 
-          owner:        currentUser._id.toString()
+          description:  'Legislation vetoed.'
+          
         };
         request('post', done, { data: testList })
           .end((err, res) => {
@@ -492,6 +476,14 @@ describe('ENDPOINT: /lists/:id', () => {
         List.findById(testList._id, (err, list) => {
           expect(err).to.equal(null);
           expect(list).to.equal(null);
+          done();
+        });
+      });
+      it('should have removed the reference to the list from the user', (done) => {
+        User.findById(currentUser._id, (err, user) => {
+          expect(err).to.equal(null);
+          let lists = user.toObject().lists;
+          expect(lists.indexOf(testList._id.toString())).to.equal(-1);
           done();
         });
       });

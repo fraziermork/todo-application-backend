@@ -26,7 +26,7 @@ const getListMidware    = require(`${__dirname}/lib/get-list-middleware`); // at
 const newAccountRouter  = require(`${__dirname}/routes/new-account`);
 const loginRouter       = require(`${__dirname}/routes/login`);
 const listsRouter       = require(`${__dirname}/routes/lists`);
-// const itemsRouter       = require(`${__dirname}/routes/items`);
+const itemsRouter       = require(`${__dirname}/routes/items`);
 
 // HANDLE SETUP 
 const app               = express();
@@ -61,7 +61,7 @@ app.use(cookieParser());
 app.use(tokenAuthMidware);
 app.use('/lists', listsRouter);
 app.use('/lists/:listId/*', getListMidware);
-// app.use('/lists/:listId/items', itemsRouter);
+app.use('/lists/:listId/items', itemsRouter);
 
 
 // FINISH SETUP
