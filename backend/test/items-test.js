@@ -90,12 +90,23 @@ describe('ENDPOINT: /lists/:listId/items', () => {
       expect(this.res.body.name).to.equal(this.postedItem.name);
       expect(this.res.body.content).to.equal(this.postedItem.content);
       expect(this.res.body).to.have.property('creationDate');
-      expect(this.res.body.list).to.equal(currentList._id);
     });
     it('should have saved the item to the database', (done) => {
       Item.findById(this.res.body._id, (err, item) => {
         expect(err).to.equal(null);
+        debug('item is: ', item);
         expect(item.name).to.equal(this.postedItem.name);
+        done();
+      });
+    });
+    it('should have saved a reference to the  item to its list', (done) => {
+      List.findById(currentList._id, (err, list) => {
+        debug('SAVED LIST:', list);
+        expect(err).to.equal(null);
+        let items = list.toObject().items;
+        expect(items.some((itemId) => {
+          return itemId.toString() === this.res.body._id;
+        })).to.equal(true);
         done();
       });
     });
@@ -169,9 +180,7 @@ describe('ENDPOINT: /lists/:listId/items', () => {
     it('should have returned an item', () => {
       expect(this.err).to.equal(null);
       expect(this.res.status).to.equal(200);
-      expect(this.res.body.name).to.equal(this.postedItem.name);
-      expect(this.res.body.content).to.equal(this.postedItem.content);
-      expect(this.res.body._id).to.equal(this.postedItem._id);
+      expect(this.res.body).to.not.be.empty;
     });
   });
   describe('testing GET all item errors', () => {

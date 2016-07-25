@@ -4,7 +4,6 @@ const debug           = require('debug')('todo:listsRouter');
 const getListMidware  = require(`${__dirname}/../lib/get-list-middleware`);
 // const AppError        = require(`${__dirname}/../lib/app-error`);
 const listCtrl        = require(`${__dirname}/../resources/list/list-controller`);
-const itemCtrl        = require(`${__dirname}/../resources/item/item-controller`);
 
 const listsRouter     = require('express').Router();
 module.exports        = listsRouter;
@@ -14,10 +13,9 @@ listsRouter.route('/')
   .post((req, res, next) => {
     debug('POST made to /lists');
     let listParams    = req.body;
-    listParams.owner  = req.user._id;
-    listCtrl.newList(listParams)
+    listCtrl.newList(listParams, req.user)
       .then((list) => {
-        return res.status(200).json(list);
+        return res.status(200).json(list.toObject());
       })
       .catch(next);
   })
@@ -25,11 +23,7 @@ listsRouter.route('/')
   // GET route for getting all of the authenticated user's lists
   .get((req, res, next) => {
     debug('GET made to /lists');    
-    listCtrl.getAllLists(req.user._id.toString())
-      .then((lists) => {
-        return res.status(200).json(lists);
-      })
-      .catch(next);
+    return res.status(200).json(req.user.lists);
   });
 
 // Attaches requested list to req, ensures that authenticated user owns that list
@@ -39,13 +33,7 @@ listsRouter.route('/:listId')
   // GET route for retrieving a single list owned by the authenticated user
   .get((req, res, next) => {
     debug('GET made to /lists/:listId');
-    itemCtrl.getAllItems(req.list._id.toString())
-      .then((items) => {
-        let list   = req.list.toObject();
-        list.items = items;
-        return res.status(200).json(list);
-      })
-      .catch(next);
+    return res.status(200).json(req.list);
   })
   
   // PUT route for updating a single list owned by the authenticated user
@@ -55,7 +43,6 @@ listsRouter.route('/:listId')
     // remove properties that they shouldn't be able to change
     delete req.body._id;
     delete req.body.creationDate;
-    delete req.body.owner;
     
     listCtrl.updateList(req.params.listId, req.body)
       .then((list) => {
@@ -67,7 +54,7 @@ listsRouter.route('/:listId')
   // DELETE route for deleting a single list owned by the authenticated user
   .delete((req, res, next) => {
     debug('DELETE made to /lists/:listId');
-    listCtrl.deleteList(req.params.listId)
+    listCtrl.deleteList(req.list, req.user)
       .then(() => {
         return res.status(204).end();
       })

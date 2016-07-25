@@ -74,7 +74,7 @@ function authenticatedRequestTakesRequest(requestFunction, baseUrl) {
       
       // set up the request to hit the endpoint 
       let currentRequest = request[method.toLowerCase()](urlToHit).withCredentials();
-      debug('authenticatedRequest options: ', options);
+      // debug('authenticatedRequest options: ', options);
       
       // If the option is true, call the appropriate method on the request with the corresponding arguments
       keys.forEach((key) => {

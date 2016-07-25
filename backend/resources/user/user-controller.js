@@ -9,6 +9,8 @@ const userCtrl            = module.exports = {};
 userCtrl.newUser          = newUser;
 userCtrl.findByUsername   = findByUsername;
 userCtrl.findByAuthToken  = findByAuthToken;
+userCtrl.manageUserLists  = manageUserLists;
+
 
 /**
  * newUser - creates a new user in the database
@@ -65,6 +67,7 @@ function findByUsername(username, password) {
 
 /**
  * findByAuthToken - this looks up a user by the authorization token that they provide in their requests
+ *                 - TODO: implement the populate as an option so it doesnt do that for every request
  *  
  * @param  {string}   token   a string that is an encoded jsonwebtoken  
  * @return {promise}          a promise that resolves with the user the webtoken belongs to or rejects with an appError 
@@ -78,8 +81,8 @@ function findByAuthToken(token) {
     } catch (err) {
       return reject(new AppError(401, 'failed to parse authorization token'));
     }
-    
     User.findById(decoded._id)
+      .populate('lists')
       .exec((err, user) => {
         if (err) {
           return reject(new AppError(400, `Mongoose error finding user with id ${decoded._id}`));
@@ -90,4 +93,42 @@ function findByAuthToken(token) {
         return resolve(user);
       });
   });
+}
+
+
+
+
+/**
+ * manageUserLists - this is used to manage a user's lists
+ *  
+ * @param  {object}   list    description 
+ * @param  {object}   user    description 
+ * @param  {object}   options description 
+ * @return {promise}          description 
+ */ 
+function manageUserLists(list, user, options = {}) {
+  debug('manageUserLists');
+  
+  let updateOperator = '$push';
+  if (options.removeFlag) {
+    debug('handleListItems removeFlag true');
+    updateOperator = '$pull';
+  }
+  
+  let updatesToUser = {};
+  updatesToUser[updateOperator] = { lists: list._id };
+  
+  return new Promise((resolve, reject) => {
+    User.findOneAndUpdate(
+      { _id: user._id }, 
+      updatesToUser, 
+      { runValidators: true, new: true }, 
+      (err, updatedUser) => {
+        if (err || !updatedUser) {
+          return reject(new AppError(400, err || 'no user existed, shouldnt have happened'));
+        }
+        return resolve(updatedUser);
+      });
+  }); 
+  
 }

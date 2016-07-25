@@ -3,30 +3,37 @@
 
 const debug               = require('debug')('todo:listCtrl');
 const List                = require(`${__dirname}/list-model`);
-const itemCtrl            = require(`${__dirname}/../item/item-controller`);
+const userCtrl            = require(`${__dirname}/../user/user-controller`);
+// const itemCtrl            = require(`${__dirname}/../item/item-controller`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
 
 
 const listCtrl            = module.exports = {};
 listCtrl.newList          = newList;
-listCtrl.getAllLists      = getAllLists;
 listCtrl.getList          = getList;
 listCtrl.updateList       = updateList;
 listCtrl.deleteList       = deleteList;
 listCtrl.deleteAllLists   = deleteAllLists;
+listCtrl.handleListItems  = handleListItems;
 
 /**
  * newList - creates a new list 
  *  
  * @param  {object} listParams    an object with properties for the new list
+ * @param  {object} user          the authenticated user's mongo document
  * @return {promise}              a promise that resolves with the new list or rejects with an appError 
  */ 
-function newList(listParams) {
+function newList(listParams, user) {
   debug('newList');
+  let newList = null;
   return new Promise((resolve, reject) => {
     List.createAsync(listParams)
       .then((list) => {
-        return resolve(list);
+        newList = list;
+        return userCtrl.manageUserLists(list, user);
+      })
+      .then((user) => {
+        return resolve(newList);
       })
       .catch((err) => {
         return reject(new AppError(400, err));
@@ -34,27 +41,6 @@ function newList(listParams) {
   });
 }
 
-
-
-/**
- * getAllLists - returns all lists that belong to a user 
- *  
- * @param  {string}  userId the _id of the user whose lists you want to find
- * @return {promise}        a promise that resolves with an array of all lists belonging to that user or rejects with an appError 
- */ 
-function getAllLists(userId) {
-  debug('getAllLists');
-  return new Promise((resolve, reject) => {
-    if (!userId) {
-      return reject(new AppError(404, 'no user id provided'));
-    }
-    List.find({ owner: userId })
-      .exec((err, lists) => {
-        if (err) return reject(new AppError(404, err));
-        return resolve(lists);
-      });
-  });
-}
 
 
 
@@ -70,7 +56,8 @@ function getList(listId) {
   debug('getList');
   return new Promise((resolve, reject) => {
     if (!listId) return reject(new AppError(400, 'no listId provided'));
-    List.findById(listId)      
+    List.findById(listId)
+      .populate('items')
       .exec((err, list) => {
         if (err || !list) {
           return reject(new AppError(404, err || 'no list found'));
@@ -112,16 +99,19 @@ function updateList(listId, listParams) {
 /**
  * deleteList - deletes a list from the database, removes references to it from its owner, and deletes all its items
  *  
- * @param  {string} listId  the _id of the list to delete  
+ * @param  {object} list  the list to delete 
+ * @param  {object} user  the user the list belongs to
  * @return {promise}        a promise that rejects with an appError or resolves with nothing 
  */ 
-function deleteList(listId) {
+function deleteList(list, user) {
   debug('deleteList');
+  
+  
   // TODO: need to delete all items in the list 
   return new Promise((resolve, reject) => {
-    List.findOneAndRemoveAsync({ _id: listId })
-      .then((list) => {
-        return itemCtrl.deleteAllItems(listId);
+    List.findOneAndRemoveAsync({ _id: list._id })
+      .then((deletedList) => {
+        return userCtrl.manageUserLists(list, user, { removeFlag: true });
       })
       .then((items) => {
         return resolve();
@@ -151,4 +141,40 @@ function deleteAllLists(userId) {
         return resolve(lists);
       });
   });
+}
+
+
+
+
+/**
+ * handleListItems - adds or removes references to an item from a list
+ *  
+ * @param     {object}    item        the item that is being put into the list or removed from it 
+ * @param     {object}    listId      the mongo _id of the list to modify the items of 
+ * @param     {object}    options     an object specifying the options for the list items operations 
+ * @property  {boolean}   removeFlag  whether to remove the item from the list with the 
+ * @return    {promise}               description 
+ */ 
+function handleListItems(item, listId, options = {}) {
+  debug('handleListItems');
+  let listOperator = '$push';
+  if (options.removeFlag) {
+    debug('handleListItems removeFlag true');
+    listOperator = '$pull';
+  }
+  let updatesToList = {};
+  updatesToList[listOperator] = { items: item._id };
+  
+  return new Promise((resolve, reject) => {
+    List.findOneAndUpdate(
+      { _id: listId }, 
+      updatesToList, 
+      { runValidators: true, new: true }, 
+      (err, updatedList) => {
+        if (err || !updatedList) {
+          return reject(new AppError(400, err || 'no list existed, shouldnt have happened'));
+        }
+        return resolve(updatedList);
+      });
+  });  
 }

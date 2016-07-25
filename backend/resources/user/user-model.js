@@ -4,7 +4,7 @@ const mongoose  = require('mongoose');
 const bcrypt    = require('bcrypt');
 const jwt       = require('jsonwebtoken');
 const debug     = require('debug')('todo:User');
-const listCtrl  = require(`${__dirname}/../list/list-controller`);
+// const listCtrl  = require(`${__dirname}/../list/list-controller`);
 
 const userSchema = new mongoose.Schema({
   username:     { type: String, required: true, unique: true },
@@ -17,7 +17,9 @@ const userSchema = new mongoose.Schema({
       /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 
       'User email field failed regex match'
     ] 
-  }
+  }, 
+  lists:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'List' }]
+  
 }, {
   timestamps: { createdAt: 'creationDate' }, 
   toObject:   { 
@@ -26,11 +28,6 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-
-// Automatically adds an empty array to the user representation as the lists property so that it doesn't mess with ng repeats
-userSchema.virtual('lists').get(() => {
-  return [];
-});
 
 // TODO: fix this to use a setter
 userSchema.pre('save', function preUserSaveHook(next) {
@@ -41,18 +38,18 @@ userSchema.pre('save', function preUserSaveHook(next) {
   });
 });
 
-userSchema.pre('remove', function preUserRemoveHook(next) {
-  debug('User pre remove');
-  listCtrl.deleteAllLists(this._id)
-    .then((items) => {
-      debug('sucessfully deleted all lists belonging to user pre user remove');
-      next();
-    })
-    .catch((err) => {
-      debug('ERROR removing lists belonging to user ', this._id, err);
-      next();
-    });
-});
+// userSchema.pre('remove', function preUserRemoveHook(next) {
+//   debug('User pre remove');
+//   listCtrl.deleteAllLists(this._id)
+//     .then((items) => {
+//       debug('sucessfully deleted all lists belonging to user pre user remove');
+//       next();
+//     })
+//     .catch((err) => {
+//       debug('ERROR removing lists belonging to user ', this._id, err);
+//       next();
+//     });
+// });
 
 userSchema.methods.comparePassword = function comparePassword(password) {
   debug('userSchema comparePassword');

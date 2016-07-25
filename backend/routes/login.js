@@ -2,7 +2,6 @@
 
 const debug       = require('debug')('todo:loginRouter');
 const AppError    = require(`${__dirname}/../lib/app-error`);
-const listCtrl    = require(`${__dirname}/../resources/list/list-controller`);
 
 const loginRouter = require('express').Router();
 module.exports    = loginRouter;
@@ -14,17 +13,10 @@ module.exports    = loginRouter;
  */ 
 loginRouter.get('/', (req, res, next) => {
   debug('GET made to /login');
-  listCtrl.getAllLists(req.user._id.toString())
-    .then((lists) => {
-      let token  = req.user.generateToken();
-      let user   = req.user.toObject();
-      user.lists = lists;
-      return res
-        .status(200)
-        .cookie('XSRF-TOKEN', token)
-        .json(user);
-    })
-    .catch(next);
+  let token  = req.user.generateToken();
+  return res.status(200)
+    .cookie('XSRF-TOKEN', token)
+    .json(req.user);
 });
 
 loginRouter.all('*', (req, res, next) => {

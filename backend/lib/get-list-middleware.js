@@ -19,7 +19,12 @@ function getListMidware(req, res, next) {
   debug('getListMidware');
   listCtrl.getList(req.params.listId)
     .then((list) => {
-      if (list.owner.toString() !== req.user._id.toString()) {
+      let listInUserListsFlag = req.user.lists.some((userList) => {
+        return userList._id.toString() === list._id.toString();
+      });
+    
+      if (!listInUserListsFlag) {
+        debug(`getListMidware LIST NOT FOUND ON USER: listId: ${list._id}, req.user.lists:`, req.user.lists);
         throw new AppError(401, 'user tried to access a list that doesnt belong to them');
       }
       req.list = list;
