@@ -5,7 +5,9 @@
 const DB_PORT           = process.env.MONGODB_URI || 'mongodb://localhost/db';
 const API_PORT          = process.env.PORT || 3000;
 const CLIENT_URL        = process.env.CLIENT_URL || 'http://localhost:8080';
-
+console.log(`DB_PORT: ${DB_PORT}`);
+console.log(`API_PORT: ${API_PORT}`);
+console.log(`CLIENT_URL: ${CLIENT_URL}`);
 // LOAD NPM MODULES
 const express           = require('express');
 const bodyParser        = require('body-parser').json();
