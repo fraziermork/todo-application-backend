@@ -23,7 +23,9 @@ newAccountRouter.post('/', (req, res, next) => {
     .then((user) => {
       let token  = user.generateToken();
       return res.status(200)
-        .cookie('XSRF-TOKEN', token)
+        .cookie('XSRF-TOKEN', token, {
+          domain: process.env.API_DEPLOYMENT_URL || 'http://localhost:3000'
+        })
         .json(user);
     })
     .catch(next);

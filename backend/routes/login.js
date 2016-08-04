@@ -15,7 +15,9 @@ loginRouter.get('/', (req, res, next) => {
   debug('GET made to /login');
   let token  = req.user.generateToken();
   return res.status(200)
-    .cookie('XSRF-TOKEN', token)
+    .cookie('XSRF-TOKEN', token, {
+      domain: process.env.API_DEPLOYMENT_URL || 'http://localhost:3000'
+    })
     .json(req.user);
 });
 
