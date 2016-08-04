@@ -33,6 +33,7 @@
     "express": "^4.13.4",
     "jsonwebtoken": "^7.0.0",
     "mongoose": "^4.4.19",
+    "lodash": "^4.13.1",
     "morgan": "^1.7.0"
   },
   "devDependencies": {
@@ -42,7 +43,6 @@
     "gulp": "^3.9.1",
     "gulp-eslint": "^2.0.0",
     "gulp-mocha": "^2.2.0",
-    "lodash": "^4.13.1",
     "mocha": "^2.5.3"
   }
 }
