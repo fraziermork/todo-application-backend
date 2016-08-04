@@ -2,8 +2,8 @@
 
 // HANDLE PORTS AND ENVIRONMENT VARIABLES
 // using MONGODB_URI
-const DB_PORT           = process.env.MONGOLAB_URI || 'mongodb://localhost/db';
-const API_PORT          = process.env.API_PORT || 3000;
+const DB_PORT           = process.env.MONGODB_URI || 'mongodb://localhost/db';
+const API_PORT          = process.env.PORT || 3000;
 const CLIENT_URL        = process.env.CLIENT_URL || 'http://localhost:8080';
 
 // LOAD NPM MODULES

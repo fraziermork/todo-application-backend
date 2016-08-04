@@ -1,12 +1,12 @@
 'use strict';
 
 
+const lodash              = require('lodash');
 const debug               = require('debug')('todo:listCtrl');
 const List                = require(`${__dirname}/list-model`);
 const userCtrl            = require(`${__dirname}/../user/user-controller`);
 // const itemCtrl            = require(`${__dirname}/../item/item-controller`);
 const AppError            = require(`${__dirname}/../../lib/app-error`);
-
 
 const listCtrl            = module.exports = {};
 listCtrl.newList          = newList;
@@ -71,24 +71,27 @@ function getList(listId) {
 /**
  * updateList - updates a lists properties, not to be used to modify a list's items 
  *  
- * @param  {string}     listId      the _id of the list to update
- * @param  {object}     listParams  the incoming request body detailing the changes to make 
- * @return {promise}                a promise that resolves with the updated list or rejects with an appError 
+ * @param  {string}     listToUpdate    the list to update
+ * @param  {object}     listParams      the incoming request body detailing the changes to make 
+ * @return {promise}                    a promise that resolves with the updated list or rejects with an appError 
  */ 
-function updateList(listId, listParams) {
+function updateList(listToUpdate, listParams = {}) {
   debug('updateList');
   return new Promise((resolve, reject) => {
-    if (!listParams || Object.keys(listParams).length === 0) {
+    if (Object.keys(listParams).length === 0) {
       return reject(new AppError(400, 'no update content provided'));
     }
+    debug('updateList, listParams: ', listParams);
     // TODO: figure out if I need to be more careful about which updates are being allowed through 
-    List.findOneAndUpdate({ _id: listId }, 
+    List.findOneAndUpdate({ _id: listToUpdate._id }, 
       { $set: listParams }, 
-      { runValidators: true, new: true }, 
-      (err, list) => {
+      { runValidators: true, new: true })
+      .populate('items')
+      .exec((err, list) => {
         if (err || !list) {
           return reject(new AppError(400, err || 'no list existed, shouldnt have happened'));
         }
+        debug('updateList success, updatedList: ', list);
         return resolve(list);
       });
   });
@@ -169,8 +172,9 @@ function handleListItems(item, listId, options = {}) {
     List.findOneAndUpdate(
       { _id: listId }, 
       updatesToList, 
-      { runValidators: true, new: true }, 
-      (err, updatedList) => {
+      { runValidators: true, new: true })
+      .populate('items')
+      .exec((err, updatedList) => {
         if (err || !updatedList) {
           return reject(new AppError(400, err || 'no list existed, shouldnt have happened'));
         }

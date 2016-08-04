@@ -44,7 +44,7 @@ listsRouter.route('/:listId')
     delete req.body._id;
     delete req.body.creationDate;
     
-    listCtrl.updateList(req.params.listId, req.body)
+    listCtrl.updateList(req.list, req.body)
       .then((list) => {
         return res.status(200).json(list);
       })
