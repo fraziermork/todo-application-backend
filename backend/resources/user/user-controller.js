@@ -54,6 +54,7 @@ function findByUsername(username, password) {
   debug('findByUsername');
   return new Promise((resolve, reject) => {
     User.findOne({ username })
+    .populate('lists')
     .exec((err, user) => {
       if (err || !user || !user.comparePassword(password)) {
         return reject(new AppError(401, err || 'incorrect username or password'));

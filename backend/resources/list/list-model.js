@@ -1,16 +1,19 @@
 'use strict';
+// TODO: allow users to share lists/for there to be more than one owner? Permissions for read, write, etc? 
 
 const mongoose    = require('mongoose');
-const debug       = require('debug')('todo:List');
+// const debug       = require('debug')('todo:List');
 // const itemCtrl    = require(`${__dirname}/../item/item-controller`);
-
-// TODO: allow users to share lists/for there to be more than one owner? Permissions for read, write, etc? 
 
 const listSchema  = new mongoose.Schema({
   name:           { type: String, required: true },
   description:    String,
-  // owner:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
-  items:          [{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }]
+  items:          [{ 
+    type:     mongoose.Schema.Types.ObjectId, 
+    ref:      'Item',
+    unique:   true, 
+    dropDups: true 
+  }]
 
 }, {
   timestamps: { createdAt: 'creationDate' }, 
@@ -34,4 +37,4 @@ const listSchema  = new mongoose.Schema({
 //     });
 // });
 
-module.exports    = mongoose.model('List', listSchema);
+module.exports = mongoose.model('List', listSchema);

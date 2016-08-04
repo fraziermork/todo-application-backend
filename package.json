@@ -6,8 +6,11 @@
   "scripts": {
     "test": "gulp test",
     "start:db": "mongod -dbpath=./backend/data/db --smallfiles",
-    "start:server": "node ./backend/server.js",
+    "start": "node ./backend/server.js",
     "start:dev": "ANGULAR_TODO_LOG_ERRORS=true DEBUG=todo* nodemon backend/server.js"
+  },
+  "engines": {
+    "node": "6.1.0"
   },
   "repository": {
     "type": "git",
